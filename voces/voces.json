@@ -1,0 +1,35 @@
+{
+ "texto": "Hi! It's me, Yuna! It's time to brush your teeth. Say it with me. Toothbrush! Great job!",
+ "voces": [
+  {
+   "id": "kokoro-bf-emma",
+   "etiqueta": "Kokoro · Emma · británica",
+   "motor": "Kokoro-82M (Apache-2.0)"
+  },
+  {
+   "id": "kokoro-bf-isabella",
+   "etiqueta": "Kokoro · Isabella · británica",
+   "motor": "Kokoro-82M (Apache-2.0)"
+  },
+  {
+   "id": "kokoro-af-heart",
+   "etiqueta": "Kokoro · Heart · americana",
+   "motor": "Kokoro-82M (Apache-2.0)"
+  },
+  {
+   "id": "kokoro-af-bella",
+   "etiqueta": "Kokoro · Bella · americana",
+   "motor": "Kokoro-82M (Apache-2.0)"
+  },
+  {
+   "id": "piper-cori",
+   "etiqueta": "Piper · Cori · británica",
+   "motor": "Piper (dominio público)"
+  },
+  {
+   "id": "piper-kristin",
+   "etiqueta": "Piper · Kristin · americana",
+   "motor": "Piper (dominio público)"
+  }
+ ]
+}

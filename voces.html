@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kids Routines — elige la voz</title>
+<style>
+  :root{ --neon:#ff4fa3; --cyan:#3fe0ff; }
+  body{margin:0; padding:18px 16px 40px; background:#140c28; color:#fff;
+       font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}
+  h1{font-size:21px; margin:0 0 6px}
+  p.sub{color:#b9a8e0; margin:0 0 18px; font-size:14px}
+  .frase{background:rgba(255,255,255,.08); border-left:3px solid var(--cyan);
+         padding:10px 12px; border-radius:8px; font-size:15px; margin-bottom:20px}
+  .voz{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+       border-radius:16px; padding:13px 14px; margin-bottom:12px}
+  .voz h2{font-size:17px; margin:0 0 2px}
+  .voz small{color:#b9a8e0; font-size:12.5px}
+  audio{width:100%; margin-top:10px}
+  .nota{color:#b9a8e0; font-size:13px; margin-top:26px; border-top:1px solid rgba(255,255,255,.14);
+        padding-top:14px}
+  b.ok{color:#7dff9b}
+</style>
+</head>
+<body>
+<h1>¿Con cuál se queda?</h1>
+<p class="sub">Todas dicen lo mismo, así que se pueden comparar de verdad. Escúchalas con el
+móvil y dime el nombre de la que quieras: con ésa genero las 287 frases de la app.</p>
+
+<div class="frase" id="frase">…</div>
+<div id="lista">Cargando…</div>
+
+<div class="nota">
+  <p><b class="ok">Las seis se pueden publicar sin problema.</b> Están elegidas por eso:
+  Kokoro tiene licencia Apache-2.0 (no pone ninguna condición al audio que genera) y las dos
+  de Piper están entrenadas desde cero con grabaciones de <b>dominio público</b> de LibriVox.</p>
+  <p>He dejado fuera a propósito otras que suenan bien (Jenny, Amy, Alba…) porque derivan de
+  una voz cuyo permiso es <b>sólo para investigación</b>, y esto va a estar publicado.</p>
+  <p>Las voces británicas encajan mejor con el texto de la app, que está en inglés británico
+  («telly», «trousers», «pyjamas»), como en Kids&amp;Us.</p>
+</div>
+
+<script>
+fetch('voces/voces.json?v=1').then(r => r.json()).then(d => {
+  document.getElementById('frase').textContent = '“' + d.texto + '”';
+  document.getElementById('lista').innerHTML = d.voces.map(v =>
+    '<div class="voz"><h2>' + v.etiqueta + '</h2>' +
+    '<small>' + v.motor + '</small>' +
+    '<audio controls preload="none" src="voces/' + v.id + '.wav"></audio></div>'
+  ).join('');
+}).catch(e => {
+  document.getElementById('lista').textContent = 'No he podido cargar las muestras: ' + e.message;
+});
+</script>
+</body>
+</html>
