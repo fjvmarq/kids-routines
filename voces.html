@@ -46,12 +46,12 @@ que quieras y con ésa genero las 287 frases de la app.</p>
 </div>
 
 <script>
-fetch('voces/voces.json?v=2').then(r => r.json()).then(d => {
+fetch('voces/voces.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(d => {
   document.getElementById('frase').textContent = '“' + d.texto + '”';
   const tarjeta = v =>
     '<div class="voz' + (v.nina ? ' nina' : '') + '"><h3>' + v.etiqueta + '</h3>' +
     '<small>' + v.motor + '</small>' +
-    '<audio controls preload="none" src="voces/' + v.id + '.wav"></audio></div>';
+    '<audio controls preload="none" src="voces/' + v.id + '.wav?t=' + Date.now() + '"></audio></div>';
 
   const ninas = d.voces.filter(v => v.nina);
   const normales = d.voces.filter(v => !v.nina);

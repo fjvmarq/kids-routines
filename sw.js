@@ -9,7 +9,7 @@
      siempre, y la caché es la red de seguridad cuando no hay cobertura. Al
      revés, una copia mala se queda pegada para siempre. */
 
-const CACHE = 'kids-routines-v5';
+const CACHE = 'kids-routines-v6';
 
 const FILES = [
   './',
@@ -55,6 +55,11 @@ self.addEventListener('fetch', e => {
 
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;      // lo de fuera, ni tocarlo
+
+  /* Estas no son la app: son páginas de trabajo (elegir voz, diagnóstico, ver
+     animaciones) y sus muestras. Si se guardan, se quedan congeladas y uno cree
+     estar viendo lo nuevo cuando ve lo viejo. Pasó con el comparador de voces. */
+  if (/\/(voces|estado|dev-animaciones)/.test(url.pathname)) return;
 
   const esCodigo = req.mode === 'navigate' ||
     /\.(html|js|css|webmanifest)$/.test(url.pathname) ||
