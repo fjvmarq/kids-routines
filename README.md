@@ -11,8 +11,7 @@ sale la fiesta con confeti y una estrella.
 Trae **38 rutinas** de fábrica (28 encendidas), la app se usa **en horizontal** y
 todo lo que guarda se queda en el móvil.
 
-Hecho en casa, para casa. No tiene anuncios, ni cuentas, ni internet: todo lo que
-guarda se queda en el móvil.
+Hecho en casa, para casa: sin anuncios, sin cuentas y sin necesidad de internet.
 
 ---
 
@@ -87,11 +86,14 @@ desde ahí se puede:
 
 ## Sobre los personajes
 
-**Luna, Coco y Hana** son personajes **originales**, dibujados en SVG dentro de
+**Yuna, Nari y Soomi** son personajes **originales**, dibujados en SVG dentro de
 `js/characters.js`. No copian a ningún grupo ni a ninguna serie: ni sus dibujos,
-ni sus nombres, ni sus canciones. Eso permite instalarla y compartirla sin
-problemas de derechos. Si en casa queréis ver a otros personajes, para eso están
-la imagen y los vídeos propios de cada rutina, que se quedan en el móvil.
+ni sus nombres, ni sus canciones. Eso permite publicar la app y compartir el
+enlace sin problemas de derechos.
+
+Si en casa queréis ver otros personajes, para eso están el **retrato propio** de
+cada chica y la imagen o el vídeo propios de cada rutina: los pones tú en la zona
+de padres y **se quedan en ese móvil**, no se publican.
 
 ---
 
