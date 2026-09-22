@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Shine Time</title>
+<meta name="theme-color" content="#120a2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ─────────────────────────── HOME ─────────────────────────── -->
+<section id="screen-home" class="screen show">
+  <header class="topbar">
+    <div class="stars-badge" id="starsBadge"><span class="star">⭐</span><span id="starsCount">0</span></div>
+    <h1 class="hello" id="helloLine">Hello!</h1>
+    <button class="gear" id="gearBtn" aria-label="Parents">
+      <span class="gear-ring"></span><span class="gear-glyph">⚙️</span>
+    </button>
+  </header>
+
+  <nav class="periods" id="periodTabs">
+    <button class="period" data-period="morning"><span>🌅</span>Morning</button>
+    <button class="period" data-period="afternoon"><span>☀️</span>Afternoon</button>
+    <button class="period" data-period="evening"><span>🌙</span>Evening</button>
+  </nav>
+
+  <div class="band" id="bandStage"></div>
+
+  <main class="cards" id="cardGrid"></main>
+
+  <div class="home-foot" id="homeFoot"></div>
+</section>
+
+<!-- ─────────────────────────── CALL ─────────────────────────── -->
+<section id="screen-call" class="screen call">
+  <button class="back" id="callBack" aria-label="Back">‹</button>
+
+  <!-- incoming -->
+  <div class="ringing" id="ringing">
+    <div class="caller-name" id="callerName">Luna</div>
+    <div class="caller-sub">is calling you…</div>
+    <div class="avatar-pulse">
+      <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+      <div class="avatar" id="callerAvatar"></div>
+    </div>
+    <button class="answer" id="answerBtn"><span>📞</span></button>
+    <div class="answer-hint">Tap to answer!</div>
+  </div>
+
+  <!-- connected -->
+  <div class="incall" id="incall" hidden>
+    <div class="incall-head"><span class="live-dot"></span><span id="incallName">Luna</span></div>
+    <div class="stage" id="callStage"></div>
+    <video class="media-video" id="callVideo" playsinline hidden></video>
+    <div class="bubble" id="callBubble"></div>
+    <div class="turn" id="turnBox" hidden><div class="mic">🎤</div><div class="turn-text">Your turn!</div></div>
+    <div class="call-actions" id="callActions" hidden>
+      <button class="btn ghost" id="againBtn">🔊 Again</button>
+      <button class="btn go" id="letsGoBtn">▶ Let's do it</button>
+      <button class="btn win" id="doneBtn">⭐ I did it!</button>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────── ACTIVITY ─────────────────────────── -->
+<section id="screen-activity" class="screen activity">
+  <button class="back" id="actBack" aria-label="Back">‹</button>
+  <div class="act-emoji" id="actEmoji">🪥</div>
+  <div class="act-text" id="actText">Brush your top teeth.</div>
+  <div class="counter" id="actCounter" hidden>1</div>
+  <div class="act-dots" id="actDots"></div>
+  <div class="act-actions">
+    <button class="btn ghost" id="actAgain">🔊 Again</button>
+    <button class="btn go" id="actNext">Next ›</button>
+    <button class="btn win" id="actDone" hidden>⭐ I did it!</button>
+  </div>
+  <div class="act-band" id="actBand"></div>
+</section>
+
+<!-- ─────────────────────────── CELEBRATION ─────────────────────────── -->
+<section id="screen-win" class="screen win">
+  <canvas id="confetti"></canvas>
+  <div class="win-inner">
+    <div class="win-band" id="winBand"></div>
+    <video class="media-video" id="winVideo" playsinline hidden></video>
+    <div class="win-title" id="winTitle">Great job!</div>
+    <div class="win-sub" id="winSub">You brushed your teeth!</div>
+    <div class="win-star" id="winStar">⭐</div>
+    <button class="btn go big" id="winBack">Back</button>
+  </div>
+</section>
+
+<!-- ─────────────────────────── PARENTS (Spanish) ─────────────────────────── -->
+<section id="screen-parents" class="screen parents">
+  <header class="p-top">
+    <button class="p-close" id="pClose">‹ Volver</button>
+    <h2>Zona de padres</h2>
+  </header>
+
+  <div class="p-body">
+    <div class="p-card">
+      <label class="p-label">Nombre de la niña</label>
+      <input class="p-input" id="pName" placeholder="Superstar">
+      <p class="p-help">Lo usan los personajes al saludar: «Hello, <span id="pNameEcho">Superstar</span>!»</p>
+    </div>
+
+    <div class="p-card">
+      <label class="p-label">¿Quién llama?</label>
+      <select class="p-input" id="pChar"></select>
+    </div>
+
+    <div class="p-card">
+      <label class="p-label">Voz en inglés</label>
+      <select class="p-input" id="pVoice"></select>
+      <div class="p-row">
+        <div class="p-slider"><span>Velocidad</span><input type="range" id="pRate" min="0.6" max="1.2" step="0.05"></div>
+        <div class="p-slider"><span>Tono</span><input type="range" id="pPitch" min="0.8" max="1.8" step="0.05"></div>
+      </div>
+      <button class="p-btn" id="pTestVoice">Probar voz</button>
+      <p class="p-help" id="pVoiceHelp"></p>
+    </div>
+
+    <div class="p-card">
+      <label class="p-label">Rutinas</label>
+      <p class="p-help">Toca una para editar su frase, su dibujo, sus pasos, tu voz o un vídeo tuyo.</p>
+      <div id="pRoutines" class="p-list"></div>
+      <button class="p-btn" id="pAdd">+ Añadir rutina</button>
+    </div>
+
+    <div class="p-card">
+      <label class="p-label">Estrellas</label>
+      <p class="p-help" id="pStarsInfo"></p>
+      <button class="p-btn warn" id="pResetDay">Reiniciar las estrellas de hoy</button>
+    </div>
+
+    <div class="p-card">
+      <label class="p-label">Copia de seguridad</label>
+      <p class="p-help">Guarda las rutinas y los ajustes en un fichero, para pasarlos a otro móvil. Los vídeos y las grabaciones no se incluyen.</p>
+      <div class="p-row">
+        <button class="p-btn" id="pExport">Exportar</button>
+        <button class="p-btn" id="pImport">Importar</button>
+      </div>
+    </div>
+
+    <p class="p-foot">Shine Time · hecho en casa · <span id="pVersion"></span></p>
+  </div>
+</section>
+
+<!-- routine editor -->
+<div class="sheet" id="editSheet" hidden>
+  <div class="sheet-inner">
+    <header class="sheet-top">
+      <button class="p-close" id="eCancel">Cancelar</button>
+      <h3 id="eTitle">Editar rutina</h3>
+      <button class="p-close save" id="eSave">Guardar</button>
+    </header>
+    <div class="sheet-body">
+      <label class="p-label">Nombre en inglés (lo que se lee en la tarjeta)</label>
+      <input class="p-input" id="eName" placeholder="Brush your teeth">
+
+      <label class="p-label">Frase que dice el personaje</label>
+      <input class="p-input" id="ePhrase" placeholder="It's time to brush your teeth!">
+
+      <label class="p-label">Palabra para repetir</label>
+      <input class="p-input" id="eWord" placeholder="toothbrush">
+
+      <label class="p-label">Frase al terminar</label>
+      <input class="p-input" id="eDone" placeholder="You brushed your teeth!">
+
+      <label class="p-label">Momento del día</label>
+      <select class="p-input" id="ePeriod">
+        <option value="morning">Mañana</option>
+        <option value="afternoon">Tarde</option>
+        <option value="evening">Noche</option>
+      </select>
+
+      <label class="p-label">Dibujo (emoji)</label>
+      <input class="p-input" id="eEmoji" placeholder="🪥">
+
+      <label class="p-label">Pasos, uno por línea (en inglés)</label>
+      <textarea class="p-input" id="eSteps" rows="4" placeholder="Put toothpaste on your toothbrush.&#10;Brush your top teeth."></textarea>
+
+      <label class="p-label">Contar hasta… (0 = sin cuenta)</label>
+      <input class="p-input" id="eCount" type="number" min="0" max="60" step="1">
+
+      <label class="p-label">Tu propia imagen</label>
+      <div class="p-media"><input type="file" id="eImage" accept="image/*"><button class="p-btn tiny" data-clear="image">Quitar</button></div>
+
+      <label class="p-label">Tu voz diciendo la frase</label>
+      <div class="p-media">
+        <button class="p-btn" id="eRec">● Grabar</button>
+        <button class="p-btn" id="ePlayRec">▶ Oír</button>
+        <button class="p-btn tiny" data-clear="voice">Quitar</button>
+      </div>
+
+      <label class="p-label">Vídeo de la llamada</label>
+      <div class="p-media"><input type="file" id="eCallVideo" accept="video/*"><button class="p-btn tiny" data-clear="callVideo">Quitar</button></div>
+
+      <label class="p-label">Vídeo de la celebración</label>
+      <div class="p-media"><input type="file" id="eWinVideo" accept="video/*"><button class="p-btn tiny" data-clear="winVideo">Quitar</button></div>
+
+      <button class="p-btn warn" id="eDelete">Borrar esta rutina</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="importFile" accept="application/json" hidden>
+
+<script src="js/characters.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/store.js"></script>
+<script src="js/data.js"></script>
+<script src="js/confetti.js"></script>
+<script src="js/app.js"></script>
+<script src="js/parents.js"></script>
+</body>
+</html>
