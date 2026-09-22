@@ -46,7 +46,7 @@ body::before{
     radial-gradient(2px 2px at 85% 45%, #ffd0ec, transparent),
     radial-gradient(1.5px 1.5px at 12% 75%, #fff, transparent),
     radial-gradient(2px 2px at 58% 88%, #ffe9a8, transparent);
-  animation:twinkle 4s ease-in-out infinite alternate;
+  animation:twinkle 7s ease-in-out infinite alternate;
 }
 @keyframes twinkle{from{opacity:.25}to{opacity:.7}}
 
@@ -138,20 +138,10 @@ body::before{
   border-top:1px solid rgba(255,255,255,.14);
 }
 .walker{
-  position:absolute; bottom:4%; left:10%; height:88%; z-index:2;
-  animation:stroll 12s ease-in-out infinite;
+  position:absolute; bottom:4%; left:50%; transform:translateX(-50%); height:88%; z-index:2;
 }
 .walker svg{height:100%; width:auto}
-.walker.talking{animation-play-state:paused}
-.walker.right{position:relative; left:auto; bottom:auto; animation:none; height:100%}
-.walker.dancing{animation:stroll 6s ease-in-out infinite}
-@keyframes stroll{
-  0%   {left:8%}
-  25%  {left:38%}
-  50%  {left:66%}
-  75%  {left:38%}
-  100% {left:8%}
-}
+.walker.right{position:relative; left:auto; bottom:auto; transform:none; height:100%}
 
 .back{
   position:absolute; top:calc(env(safe-area-inset-top) + 6px); left:8px; z-index:9;
@@ -165,12 +155,12 @@ body::before{
 .avatar-pulse{position:relative; height:88%; aspect-ratio:1; display:grid; place-items:center}
 .avatar{height:88%; display:grid; place-items:center}
 .avatar svg{height:100%}
-.ring{position:absolute; border-radius:50%; border:3px solid rgba(255,255,255,.35); inset:6%;
-  animation:ringpulse 2.4s ease-out infinite}
-.ring.r2{animation-delay:.8s} .ring.r3{animation-delay:1.6s}
+.ring{position:absolute; border-radius:50%; border:3px solid rgba(255,255,255,.3); inset:6%;
+  animation:ringpulse 4s ease-out infinite}
+.ring.r2{animation-delay:1.33s} .ring.r3{animation-delay:2.66s}
 @keyframes ringpulse{
-  0%{transform:scale(.62); opacity:.9; border-color:rgba(63,224,255,.8)}
-  100%{transform:scale(1.2); opacity:0; border-color:rgba(255,95,176,.1)}
+  0%{transform:scale(.68); opacity:.75; border-color:rgba(63,224,255,.7)}
+  100%{transform:scale(1.16); opacity:0; border-color:rgba(255,95,176,.1)}
 }
 .ringing-side{display:flex; flex-direction:column; align-items:center; gap:4px}
 .caller-name{font-size:30px; font-weight:800}
@@ -179,9 +169,9 @@ body::before{
   width:78px;height:78px;border-radius:50%;border:none;
   background:linear-gradient(140deg,#49e06a,#17a94a); font-size:34px; color:#fff;
   box-shadow:0 12px 30px rgba(30,200,90,.45);
-  animation:shake 1.2s ease-in-out infinite;
+  animation:shake 2.6s ease-in-out infinite;
 }
-@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg) scale(1.05)}75%{transform:rotate(12deg) scale(1.05)}}
+@keyframes shake{0%,100%{transform:rotate(0) scale(1)}30%{transform:rotate(-7deg) scale(1.04)}70%{transform:rotate(7deg) scale(1.04)}}
 .answer-hint{color:var(--ink-soft); font-size:14px; margin-top:4px}
 
 /* ───────── llamada en curso ───────── */
@@ -210,9 +200,9 @@ body::before{
   display:flex; align-items:center; gap:10px; background:rgba(40,20,70,.85);
   border:2px dashed var(--gold); border-radius:var(--r-md); padding:8px 18px;
 }
-.turn .mic{font-size:28px; animation:bob .7s ease-in-out infinite alternate}
+.turn .mic{font-size:28px; animation:bob 1.6s ease-in-out infinite alternate}
 .turn-text{font-size:20px; font-weight:800}
-@keyframes bob{to{transform:translateY(-7px) scale(1.08)}}
+@keyframes bob{to{transform:translateY(-5px) scale(1.04)}}
 
 .call-actions,.act-actions{display:flex; gap:10px; justify-content:flex-end; flex:none}
 .btn{
@@ -232,7 +222,7 @@ body::before{
   gap:8px; text-align:center; min-width:0; background:rgba(18,10,42,.42); border-radius:20px;
   padding:10px 14px; backdrop-filter:blur(3px)}
 .act-emoji{font-size:64px; line-height:1; filter:drop-shadow(0 8px 14px rgba(0,0,0,.4));
-  animation:bob 1s ease-in-out infinite alternate}
+  animation:bob 2.6s ease-in-out infinite alternate}
 .act-text{font-size:26px; font-weight:800; line-height:1.2}
 .counter{font-size:84px; font-weight:800; color:var(--gold); line-height:1;
   text-shadow:0 0 24px rgba(255,212,71,.6); animation:pop .3s ease}
@@ -321,29 +311,112 @@ body::before{
   @keyframes turnphone{0%,40%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
 }
 
-/* ───────── personajes (SVG) ───────── */
+/* ───────── cómo se mueven las chicas ─────────
+   Regla de la casa: LENTO, PEQUEÑO y SUAVE. Es para una niña de 5 años: tiene
+   que dar ternura, no nervio. Nada de deslizarse por el suelo, nada de
+   sacudidas, ángulos de pocos grados y ciclos largos. Si dudas, más lento. */
+
 .kchar{overflow:visible}
 .kchar .body-g{transform-origin:100px 350px}
-.idle .body-g{animation:idle 2.2s ease-in-out infinite}
-@keyframes idle{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(-1.2deg)}}
-.dance .body-g{animation:dance .6s ease-in-out infinite}
-@keyframes dance{
-  0%{transform:translateY(0) rotate(-6deg)} 25%{transform:translateY(-14px) rotate(0deg)}
-  50%{transform:translateY(0) rotate(6deg)} 75%{transform:translateY(-14px) rotate(0deg)}
-  100%{transform:translateY(0) rotate(-6deg)}
+.kchar .head{transform-origin:100px 112px}
+.kchar .arm-l{transform-origin:80px 132px}
+.kchar .arm-r{transform-origin:120px 132px}
+.kchar .leg-l{transform-origin:92px 216px}
+.kchar .leg-r{transform-origin:108px 216px}
+.kchar .mouth{transform:scale(1,.5)}
+
+/* quieta: respira hondo y despacio, y parpadea de vez en cuando */
+.idle .body-g{animation:respira 6s ease-in-out infinite}
+.idle .head{animation:cabecea 9s ease-in-out infinite}
+.idle .arm-l{animation:brazoQuieto 9s ease-in-out infinite}
+.idle .arm-r{animation:brazoQuieto 9s ease-in-out infinite reverse}
+@keyframes respira{
+  0%,100%{transform:translateY(0) scaleY(1)}
+  50%    {transform:translateY(-2px) scaleY(1.01)}
 }
-.idle .arm-r{animation:wave 1.8s ease-in-out infinite}
-@keyframes wave{0%,100%{transform:rotate(0)}40%{transform:rotate(-26deg)}70%{transform:rotate(-10deg)}}
-.dance .arm-l{animation:armdl .6s ease-in-out infinite}
-.dance .arm-r{animation:armdr .6s ease-in-out infinite}
-@keyframes armdl{0%,100%{transform:rotate(18deg)}50%{transform:rotate(-34deg)}}
-@keyframes armdr{0%,100%{transform:rotate(-34deg)}50%{transform:rotate(18deg)}}
-.speaking .mouth{animation:talk .26s ease-in-out infinite alternate}
-@keyframes talk{from{transform:scale(1,.35)}to{transform:scale(1.06,1.15)}}
-.kchar .mouth{transform:scale(1,.45)}
-.kchar .sparkle{animation:sp 1.6s ease-in-out infinite}
-.kchar .sparkle.s2{animation-delay:.5s} .kchar .sparkle.s3{animation-delay:1s}
-@keyframes sp{0%,100%{opacity:.25; transform:scale(.7)}50%{opacity:1; transform:scale(1.15)}}
+@keyframes cabecea{
+  0%,100%{transform:rotate(0deg)}
+  40%    {transform:rotate(1.4deg)}
+  75%    {transform:rotate(-1deg)}
+}
+@keyframes brazoQuieto{
+  0%,100%{transform:rotate(0deg)}
+  50%    {transform:rotate(2.5deg)}
+}
+
+/* el parpadeo: cierra rápido, abre, y se toma su tiempo hasta el siguiente */
+.kchar .blink{transform-box:fill-box; transform-origin:center top; transform:scaleY(0);
+  animation:parpadea 6.5s ease-in-out infinite}
+@keyframes parpadea{
+  0%, 95.5%, 100%{transform:scaleY(0)}
+  96.5%, 98.5%   {transform:scaleY(1)}
+}
+
+/* hablando: mueve la boca con calma y asiente un poquito */
+.speaking .mouth{animation:boca .42s ease-in-out infinite alternate}
+.speaking .head{animation:asiente 3.2s ease-in-out infinite}
+@keyframes boca{
+  from{transform:scale(1,.45)}
+  to  {transform:scale(1.03,1.02)}
+}
+@keyframes asiente{
+  0%,100%{transform:rotate(-1deg)}
+  50%    {transform:rotate(1.6deg)}
+}
+
+/* celebrando: un balanceo alegre, no un temblor */
+.dance .body-g{animation:balanceo 2s ease-in-out infinite}
+.dance .head{animation:cabezaBaile 2s ease-in-out infinite}
+.dance .arm-l{animation:brazoBaileA 2s ease-in-out infinite}
+.dance .arm-r{animation:brazoBaileB 2s ease-in-out infinite}
+.dance .leg-l{animation:piernaBaileA 2s ease-in-out infinite}
+.dance .leg-r{animation:piernaBaileB 2s ease-in-out infinite}
+@keyframes balanceo{
+  0%,100%{transform:translateY(0) rotate(-1.5deg)}
+  25%    {transform:translateY(-7px) rotate(0deg)}
+  50%    {transform:translateY(0) rotate(1.5deg)}
+  75%    {transform:translateY(-7px) rotate(0deg)}
+}
+@keyframes cabezaBaile{
+  0%,100%{transform:rotate(-3deg)}
+  50%    {transform:rotate(3deg)}
+}
+@keyframes brazoBaileA{
+  0%,100%{transform:rotate(-26deg)}
+  50%    {transform:rotate(-6deg)}
+}
+@keyframes brazoBaileB{
+  0%,100%{transform:rotate(-6deg)}
+  50%    {transform:rotate(-26deg)}
+}
+@keyframes piernaBaileA{
+  0%,100%{transform:rotate(0deg)}
+  50%    {transform:rotate(-4deg)}
+}
+@keyframes piernaBaileB{
+  0%,100%{transform:rotate(-4deg)}
+  50%    {transform:rotate(0deg)}
+}
+
+/* saluda con la mano al descolgar: dos veces y para */
+.wave .arm-r{animation:saluda 2.4s ease-in-out 2}
+@keyframes saluda{
+  0%,100%{transform:rotate(0deg)}
+  25%,65%{transform:rotate(-44deg)}
+  45%    {transform:rotate(-28deg)}
+}
+
+/* los destellos, muy despacio */
+.kchar .sparkle{animation:brilla 5s ease-in-out infinite}
+.kchar .sparkle.s2{animation-delay:1.7s} .kchar .sparkle.s3{animation-delay:3.4s}
+@keyframes brilla{
+  0%,100%{opacity:.35; transform:scale(.9)}
+  50%    {opacity:.9; transform:scale(1.06)}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .kchar *{animation:none !important}
+}
 
 /* ───────── gestos: la chica HACIENDO la rutina ───────── */
 .set-layer{position:absolute; inset:0; z-index:1; pointer-events:none}
@@ -354,59 +427,59 @@ body::before{
 .scene .act-left{position:relative; z-index:3}
 
 /* el brazo que cepilla: arriba y abajo, deprisa */
-.do-brush .arm-r{animation:gBrush .42s ease-in-out infinite alternate; transform-origin:120px 130px}
-@keyframes gBrush{from{transform:rotate(-96deg)}to{transform:rotate(-124deg)}}
+.do-brush .arm-r{animation:gBrush 1.1s ease-in-out infinite alternate; transform-origin:120px 132px}
+@keyframes gBrush{from{transform:rotate(-100deg)}to{transform:rotate(-118deg)}}
 .do-brush .arm-l{animation:none; transform:rotate(6deg)}
 
 /* frotarse las manos / enjabonarse */
-.do-scrub .arm-r{animation:gScrubR .34s ease-in-out infinite alternate; transform-origin:120px 130px}
-.do-scrub .arm-l{animation:gScrubL .34s ease-in-out infinite alternate; transform-origin:80px 130px}
-@keyframes gScrubR{from{transform:rotate(-40deg)}to{transform:rotate(-58deg)}}
-@keyframes gScrubL{from{transform:rotate(44deg)}to{transform:rotate(26deg)}}
-.do-scrub .body-g{animation:idle 1.6s ease-in-out infinite}
+.do-scrub .arm-r{animation:gScrubR 1s ease-in-out infinite alternate; transform-origin:120px 132px}
+.do-scrub .arm-l{animation:gScrubL 1s ease-in-out infinite alternate; transform-origin:80px 132px}
+@keyframes gScrubR{from{transform:rotate(-42deg)}to{transform:rotate(-54deg)}}
+@keyframes gScrubL{from{transform:rotate(42deg)}to{transform:rotate(30deg)}}
+.do-scrub .body-g{animation:respira 6s ease-in-out infinite}
 
 /* llevarse la cuchara a la boca */
-.do-eat .arm-r{animation:gEat 1.5s ease-in-out infinite; transform-origin:120px 130px}
+.do-eat .arm-r{animation:gEat 3.4s ease-in-out infinite; transform-origin:120px 132px}
 @keyframes gEat{0%,100%{transform:rotate(-10deg)} 45%{transform:rotate(-112deg)} 60%{transform:rotate(-112deg)}}
 
 /* agacharse a recoger */
-.do-pickup .body-g{animation:gPick 2s ease-in-out infinite; transform-origin:100px 350px}
-@keyframes gPick{0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(16px) rotate(-8deg)}}
-.do-pickup .arm-r{animation:gPickArm 2s ease-in-out infinite; transform-origin:120px 130px}
+.do-pickup .body-g{animation:gPick 4.4s ease-in-out infinite; transform-origin:100px 350px}
+@keyframes gPick{0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(10px) rotate(-5deg)}}
+.do-pickup .arm-r{animation:gPickArm 4.4s ease-in-out infinite; transform-origin:120px 132px}
 @keyframes gPickArm{0%,100%{transform:rotate(0)} 50%{transform:rotate(-26deg)}}
 
 /* leer: el libro quieto y la cabeza asintiendo */
-.do-read .arm-r{transform:rotate(-70deg); transform-origin:120px 130px}
-.do-read .arm-l{transform:rotate(70deg); transform-origin:80px 130px}
-.do-read .body-g{animation:gRead 3s ease-in-out infinite}
+.do-read .arm-r{transform:rotate(-62deg); transform-origin:120px 132px}
+.do-read .arm-l{transform:rotate(62deg); transform-origin:80px 132px}
+.do-read .body-g{animation:gRead 6s ease-in-out infinite}
 @keyframes gRead{0%,100%{transform:rotate(0)} 50%{transform:rotate(3deg)}}
 
 /* dormir: se acurruca y respira despacio */
-.do-sleep .body-g{animation:gSleep 3.4s ease-in-out infinite; transform-origin:100px 350px}
+.do-sleep .body-g{animation:gSleep 7s ease-in-out infinite; transform-origin:100px 350px}
 @keyframes gSleep{0%,100%{transform:rotate(-8deg) translateY(4px)} 50%{transform:rotate(-8deg) translateY(-4px)}}
 .do-sleep .arm-r,.do-sleep .arm-l{animation:none}
 
 /* estirarse al levantarse */
-.do-stretch .arm-r{animation:gStretchR 2.4s ease-in-out infinite; transform-origin:120px 130px}
-.do-stretch .arm-l{animation:gStretchL 2.4s ease-in-out infinite; transform-origin:80px 130px}
-@keyframes gStretchR{0%,100%{transform:rotate(0)} 40%,60%{transform:rotate(-150deg)}}
-@keyframes gStretchL{0%,100%{transform:rotate(0)} 40%,60%{transform:rotate(150deg)}}
+.do-stretch .arm-r{animation:gStretchR 5s ease-in-out infinite; transform-origin:120px 132px}
+.do-stretch .arm-l{animation:gStretchL 5s ease-in-out infinite; transform-origin:80px 132px}
+@keyframes gStretchR{0%,100%{transform:rotate(0)} 40%,60%{transform:rotate(-140deg)}}
+@keyframes gStretchL{0%,100%{transform:rotate(0)} 40%,60%{transform:rotate(140deg)}}
 
 /* saltar (jugar fuera) */
-.do-jump .body-g{animation:gJump .9s ease-in-out infinite; transform-origin:100px 350px}
-@keyframes gJump{0%,100%{transform:translateY(0)} 40%{transform:translateY(-26px)} 55%{transform:translateY(-26px)}}
+.do-jump .body-g{animation:gJump 2.4s ease-in-out infinite; transform-origin:100px 350px}
+@keyframes gJump{0%,100%{transform:translateY(0)} 45%{transform:translateY(-16px)} 60%{transform:translateY(-16px)}}
 
 /* el agua que cae del grifo */
-.drops ellipse{animation:gDrop 1.1s linear infinite}
-.drops ellipse:nth-child(2){animation-delay:.5s}
+.drops ellipse{animation:gDrop 2.4s ease-in infinite}
+.drops ellipse:nth-child(2){animation-delay:1.2s}
 @keyframes gDrop{0%{transform:translateY(-14px); opacity:0}20%{opacity:1}100%{transform:translateY(26px); opacity:0}}
 
 /* retrato propio: si los padres cargan una imagen, manda ella */
 .portrait{height:100%; width:auto; max-width:100%; object-fit:contain; display:block;
   border-radius:18px; filter:drop-shadow(0 10px 22px rgba(0,0,0,.45));
-  animation:idle 2.6s ease-in-out infinite}
-.talking .portrait{animation:portraitTalk .5s ease-in-out infinite alternate}
-@keyframes portraitTalk{from{transform:scale(1)}to{transform:scale(1.035)}}
+  animation:respira 6s ease-in-out infinite}
+.talking .portrait{animation:portraitTalk 1.2s ease-in-out infinite alternate}
+@keyframes portraitTalk{from{transform:scale(1)}to{transform:scale(1.02)}}
 .band-slot{flex:1; min-width:0; display:flex; align-items:flex-end; justify-content:center; height:100%}
 .band-slot svg,.band-slot .portrait{height:100%; width:auto; margin:0 -10px}
 

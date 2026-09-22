@@ -244,6 +244,27 @@
 
 <input type="file" id="importFile" accept="application/json" hidden>
 
+<script>
+/* Si algo falla, que se VEA: una pantalla en blanco no se puede diagnosticar. */
+(function () {
+  function pinta(msg) {
+    try {
+      var d = document.createElement('div');
+      d.setAttribute('style',
+        'position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#b3123c;color:#fff;' +
+        'font:13px/1.4 system-ui,sans-serif;padding:10px 12px;white-space:pre-wrap;');
+      d.textContent = 'Kids Routines — fallo: ' + msg;
+      (document.body || document.documentElement).appendChild(d);
+    } catch (e) {}
+  }
+  window.addEventListener('error', function (e) {
+    pinta((e.message || 'error') + '\n' + (e.filename || '') + ':' + (e.lineno || ''));
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    pinta('promesa sin recoger: ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+  });
+})();
+</script>
 <script src="js/characters.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/store.js"></script>

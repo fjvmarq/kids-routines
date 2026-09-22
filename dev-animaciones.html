@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Kids Routines — cómo se mueven</title>
+<link rel="stylesheet" href="css/app.css">
+<style>
+  body{overflow:auto; padding:16px}
+  h2{font-size:15px; margin:14px 0 6px; color:#fff}
+  .fila{display:flex; gap:10px; align-items:flex-end; height:230px;
+        background:rgba(255,255,255,.05); border-radius:18px; padding:10px}
+  .hueco{flex:1; display:flex; align-items:flex-end; justify-content:center; height:100%}
+  .hueco svg{height:100%}
+  .pie{color:rgba(255,255,255,.6); font-size:12px; margin-top:4px}
+</style>
+</head>
+<body>
+<div id="todo"></div>
+
+<script src="js/characters.js"></script>
+<script src="js/scenes.js"></script>
+<script>
+const ESTADOS = [
+  { titulo: 'Quieta (respira y parpadea)', opts: { pose: 'idle' } },
+  { titulo: 'Hablando', opts: { pose: 'idle speaking', mic: true } },
+  { titulo: 'Saludando al descolgar', opts: { pose: 'idle wave', mic: true } },
+  { titulo: 'Celebrando', opts: { pose: 'dance', mic: true } },
+  { titulo: 'Lavándose los dientes', opts: { pose: 'still', prop: Scenes.prop('teeth'), action: Scenes.action('teeth') } },
+  { titulo: 'Lavándose las manos', opts: { pose: 'still', prop: Scenes.prop('hands'), action: Scenes.action('hands') } },
+  { titulo: 'Comiendo', opts: { pose: 'still', prop: Scenes.prop('eat'), action: Scenes.action('eat') } },
+  { titulo: 'Recogiendo', opts: { pose: 'still', prop: Scenes.prop('tidy'), action: Scenes.action('tidy') } },
+  { titulo: 'Durmiendo', opts: { pose: 'still', action: Scenes.action('sleep') } }
+];
+
+document.getElementById('todo').innerHTML = ESTADOS.map(e =>
+  '<h2>' + e.titulo + '</h2><div class="fila">' +
+  Characters.LIST.map(c => '<div class="hueco">' + Characters.svg(c, e.opts) + '</div>').join('') +
+  '</div>'
+).join('');
+</script>
+</body>
+</html>

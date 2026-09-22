@@ -73,6 +73,10 @@ const Characters = (function () {
             fill="#2a1338"/>
       <path d="M${-s * 12},-7 q${-s * 4},-2 ${-s * 6},-7 q${-s * 1},6 ${s * 3},10 Z" fill="#2a1338"/>
       <path d="M-11,13 q11,6 22,0" stroke="#2a1338" stroke-width="1.3" fill="none" opacity=".35"/>
+      <g class="blink">
+        <ellipse cx="0" cy="0" rx="14" ry="17" fill="${c.skin}"/>
+        <path d="M-13,0 q13,7 26,0 q-13,4 -26,0 Z" fill="#2a1338"/>
+      </g>
     </g>`;
   }
 
@@ -183,17 +187,21 @@ const Characters = (function () {
 
   <g class="body-g" style="transform-origin:100px 350px">
 
-    <!-- piernas, medias altas y botas -->
-    <path d="M85,218 h14 v34 h-14 Z" fill="${c.skin}"/>
-    <path d="M101,218 h14 v34 h-14 Z" fill="${c.skin}"/>
-    <path d="M85,244 h15 v58 q0,4 -7.5,4 q-7.5,0 -7.5,-4 Z" fill="${c.socks}"/>
-    <path d="M100,244 h15 v58 q0,4 -7.5,4 q-7.5,0 -7.5,-4 Z" fill="${c.socks}"/>
-    <rect x="85" y="244" width="15" height="5" fill="${c.trim}"/>
-    <rect x="100" y="244" width="15" height="5" fill="${c.trim}"/>
-    <path d="M83,300 h18 v38 q0,6 -6,6 h-8 q-4,0 -4,-6 Z" fill="${c.boots}"/>
-    <path d="M99,300 h18 v38 q0,6 -4,6 h-8 q-6,0 -6,-6 Z" fill="${c.boots}"/>
-    <path d="M81,336 h22 v8 h-22 Z" fill="${c.trim}" opacity=".8"/>
-    <path d="M97,336 h22 v8 h-22 Z" fill="${c.trim}" opacity=".8"/>
+    <!-- piernas, medias altas y botas (cada una en su grupo, para animarlas) -->
+    <g class="leg-l" style="transform-origin:92px 214px">
+      <path d="M85,218 h14 v34 h-14 Z" fill="${c.skin}"/>
+      <path d="M85,244 h15 v58 q0,4 -7.5,4 q-7.5,0 -7.5,-4 Z" fill="${c.socks}"/>
+      <rect x="85" y="244" width="15" height="5" fill="${c.trim}"/>
+      <path d="M83,300 h18 v38 q0,6 -6,6 h-8 q-4,0 -4,-6 Z" fill="${c.boots}"/>
+      <path d="M81,336 h22 v8 h-22 Z" fill="${c.trim}" opacity=".8"/>
+    </g>
+    <g class="leg-r" style="transform-origin:108px 214px">
+      <path d="M101,218 h14 v34 h-14 Z" fill="${c.skin}"/>
+      <path d="M100,244 h15 v58 q0,4 -7.5,4 q-7.5,0 -7.5,-4 Z" fill="${c.socks}"/>
+      <rect x="100" y="244" width="15" height="5" fill="${c.trim}"/>
+      <path d="M99,300 h18 v38 q0,6 -4,6 h-8 q-6,0 -6,-6 Z" fill="${c.boots}"/>
+      <path d="M97,336 h22 v8 h-22 Z" fill="${c.trim}" opacity=".8"/>
+    </g>
 
     ${hairBack(c, g)}
 
@@ -235,7 +243,8 @@ const Characters = (function () {
       ${o.prop || ''}
     </g>
 
-    <!-- cara -->
+    <!-- cabeza entera (cara + ojos + pelo de delante), para ladearla al hablar -->
+    <g class="head" style="transform-origin:100px 108px">
     <path d="M100,22 c-19,0 -30,14 -30,38 c0,20 5,34 14,43 c6,6 11,9 16,9
              c5,0 10,-3 16,-9 c9,-9 14,-23 14,-43 c0,-24 -11,-38 -30,-38 Z"
           fill="${c.skin}"/>
@@ -259,6 +268,7 @@ const Characters = (function () {
     <circle cx="118" cy="81" r="2.6" fill="#5a4a80"/>
 
     ${hairFront(c, g)}
+    </g>
 
     <!-- destellos de escenario -->
     ${star(32, 52, 7, '#ffffff', 'sparkle s3')}

@@ -201,7 +201,7 @@ const App = (function () {
     $('#incallName').textContent = caller.name;
     const scene = Scenes.forRoutine(routine);
     $('#callSet').innerHTML = Scenes.set(scene);
-    paintCharacter($('#callStage'), caller, { pose: 'idle', mic: true });
+    paintCharacter($('#callStage'), caller, { pose: 'idle wave', mic: true });
     runCallScript();
   }
 
