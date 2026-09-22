@@ -11,7 +11,6 @@ const App = (function () {
   let ringTimeout = null;
   let objectUrls = [];         // los liberamos al re-pintar
   let wakeLock = null;
-  let stepIndex = 0;
 
   /* ───────── utilidades ───────── */
 
@@ -76,7 +75,7 @@ const App = (function () {
 
   function show(id) {
     $$('.screen').forEach(s => s.classList.toggle('show', s.id === id));
-    if (id !== 'screen-win') Confetti.stop();
+    if (id !== 'screen-show') Confetti.stop();
     if (id === 'screen-home') keepAwake(false); else keepAwake(true);
     document.activeElement && document.activeElement.blur && document.activeElement.blur();
   }
@@ -87,12 +86,13 @@ const App = (function () {
     Sound.stopRing();
     clearTimeout(ringTimeout);
     stopVideos();
+    Stage.pause();                 // en casa el 3D no gasta batería
     renderHome();
     show('screen-home');
   }
 
   function stopVideos() {
-    ['callVideo', 'winVideo'].forEach(id => {
+    ['showVideo'].forEach(id => {
       const v = document.getElementById(id);
       if (v) { try { v.pause(); } catch (e) {} v.hidden = true; v.removeAttribute('src'); v.load && v.load(); }
     });
@@ -162,13 +162,44 @@ const App = (function () {
       : '';
   }
 
-  /* ───────── la llamada ───────── */
+  /* ───────── la llamada y la fiesta ─────────
+     Como en Kids&Us: la chica llama (rin rin), dice lo que toca, y esperan dos
+     botones grandes. «Congratulations!» = lo ha hecho → fiesta y estrella.
+     «I'll try later» = todavía no → se despide y vuelve a casa, sin reñir.
+     Todo pasa en la misma escena, con la chica en primer plano. */
+
+  const FRASE_FIESTA = 'Congratulations!';
+  const FRASE_LUEGO = 'OK! See you later!';
 
   function pickCaller() {
     const s = Store.getSettings();
     return s.character && s.character !== 'random'
       ? Characters.byId(s.character)
       : Characters.random(caller && caller.id);
+  }
+
+  function estado(e) { $('#screen-show').dataset.state = e; }
+
+  /* dice una frase: la enseña en el bocadillo y mueve la boca mientras suena */
+  async function say(text) {
+    const my = token;
+    if (!text) return true;
+    $('#bubble').textContent = text;
+    Stage.talking(true);
+    await Voice.say(text, caller ? { pitch: caller.pitch, rate: caller.rate } : null);
+    Stage.talking(false);
+    return my === token;
+  }
+
+  async function playVideoBlob(blob) {
+    const el = $('#showVideo');
+    return new Promise(resolve => {
+      el.src = urlFor(blob);
+      el.hidden = false;
+      el.onended = resolve;
+      el.onerror = resolve;
+      el.play().catch(resolve);
+    });
   }
 
   function startCall(r) {
@@ -179,70 +210,44 @@ const App = (function () {
     Voice.pack.setCharacter(caller.id);      // cada chica, con su voz
     Sound.unlock();
 
-    // dejamos los audios de esta llamada preparados, para que no haya esperas
-    Voice.pack.warm([
-      caller.hello, r.phrase, 'Say it with me.', (r.word || '') + '!',
-      "Let's go!", r.done
-    ].concat((r.steps || []).map(st => st.text)), caller.id);
+    // los audios de esta llamada, preparados para que no haya esperas
+    Voice.pack.warm([caller.hello, r.phrase, FRASE_FIESTA, r.done, FRASE_LUEGO], caller.id);
 
+    estado('ringing');
     $('#callerName').textContent = caller.name;
-    paintCharacter($('#callerAvatar'), caller, { pose: 'idle' });
-    $('#ringing').hidden = false;
-    $('#incall').hidden = true;
-    $('#callActions').hidden = true;
-    $('#turnBox').hidden = true;
-    $('#callBubble').innerHTML = '';
+    $('#callState').textContent = 'is calling…';
+    $('#bubble').textContent = '';
+    $('#bigActions').hidden = true;
+    $('#partyText').hidden = true;
     stopVideos();
 
-    show('screen-call');
-    Sound.startRing();
-    ringTimeout = setTimeout(() => { if (my === token) answer(); }, 7000);
-  }
+    show('screen-show');
+    Stage.mount($('#stage'));
+    Stage.resume();
+    Stage.setMood('ring');
+    $('#stage').classList.add('cargando');
 
-  function answer() {
-    clearTimeout(ringTimeout);
-    Sound.stopRing();
-    Sound.pickUp();
-    $('#ringing').hidden = true;
-    $('#incall').hidden = false;
-    $('#incallName').textContent = caller.name;
-    const scene = Scenes.forRoutine(routine);
-    $('#callSet').innerHTML = Scenes.set(scene);
-    paintCharacter($('#callStage'), caller, { pose: 'idle wave', mic: true });
-    runCallScript();
-  }
-
-  /* mientras habla mueve la boca y se queda quieta; si calla, vuelve a pasearse */
-  function mouth(on) {
-    const svg = $('#callStage .kchar');
-    if (svg) svg.classList.toggle('speaking', !!on);
-    $('#callStage').classList.toggle('talking', !!on);
-  }
-
-  /* dice una frase moviendo la boca y enseñándola en el bocadillo */
-  async function speak(text, bubbleHtml) {
-    const my = token;
-    $('#callBubble').innerHTML = bubbleHtml === undefined ? esc(text) : bubbleHtml;
-    mouth(true);
-    await Voice.say(text, caller ? { pitch: caller.pitch, rate: caller.rate } : null);
-    mouth(false);
-    return my === token;
-  }
-
-  async function playVideoBlob(el, blob) {
-    return new Promise(resolve => {
-      el.src = urlFor(blob);
-      el.hidden = false;
-      el.onended = resolve;
-      el.onerror = resolve;
-      el.play().catch(resolve);
+    // esperar a que estén su chica y su habitación (llama DESDE el sitio de la
+    // rutina). Con todo ya en el móvil es inmediato; la primera vez puede tardar,
+    // y no queremos que llame una pantalla vacía. Como mucho, 8 segundos.
+    const listo = Promise.all([Stage.setCharacter(caller), Stage.setScene(Scenes.forRoutine(r))]);
+    const tope = new Promise(res => setTimeout(res, 8000));
+    Promise.race([listo, tope]).then(() => {
+      if (my !== token) return;
+      $('#stage').classList.remove('cargando');
+      Sound.startRing();
+      // rin rin… y habla. No hay que descolgar: como en Kids&Us, empieza sola.
+      ringTimeout = setTimeout(() => { if (my === token) connect(); }, 3000);
     });
   }
 
-  async function runCallScript() {
+  async function connect() {
     const my = token;
     const r = routine, c = caller;
-    const name = childName();
+    Sound.stopRing();
+    Sound.pickUp();
+    estado('talking');
+    $('#callState').textContent = '';
 
     const [voiceBlob, videoBlob] = await Promise.all([
       Media.get(r.id, 'voice'), Media.get(r.id, 'callVideo')
@@ -250,194 +255,105 @@ const App = (function () {
     if (my !== token) return;
 
     if (videoBlob) {
-      // vídeo propio de papá y mamá: manda él
-      $('#callStage').style.display = 'none';
-      $('#callBubble').innerHTML = '';
-      await playVideoBlob($('#callVideo'), videoBlob);
+      // vídeo propio de casa: manda él
+      await playVideoBlob(videoBlob);
       if (my !== token) return;
+      stopVideos();
     } else {
-      $('#callStage').style.display = '';
-      // con el nombre si podemos decirlo; si sólo hay audios grabados, el saludo de ella
+      Stage.setMood('talk');
+      const name = childName();
       const saludo = name ? 'Hello, ' + name + '! It\'s me, ' + c.name + '!' : c.hello;
-      if (!(await speak(Voice.canSay(saludo) ? saludo : c.hello))) return;
-      await Voice.pause(200);
+      if (!(await say(Voice.canSay(saludo) ? saludo : c.hello))) return;
+      await Voice.pause(180);
+      if (my !== token) return;
 
       if (voiceBlob) {
-        // la voz grabada en casa sustituye a la del móvil
-        $('#callBubble').innerHTML = highlight(r.phrase, r.word);
-        mouth(true);
+        // la voz grabada en casa sustituye a la de la chica
+        $('#bubble').textContent = r.phrase;
+        Stage.talking(true);
         await Voice.playBlob(voiceBlob);
-        mouth(false);
+        Stage.talking(false);
       } else {
-        if (!(await speak(r.phrase, highlight(r.phrase, r.word)))) return;
+        if (!(await say(r.phrase))) return;
       }
       if (my !== token) return;
     }
 
-    // «Say it with me» — la parte que enseña inglés
-    if (r.word) {
-      await Voice.pause(250);
-      // en dos trozos a propósito: así cada uno tiene su audio grabado
-      if (!(await speak('Say it with me.', '<em>' + esc(r.word) + '</em>'))) return;
-      if (!(await speak(r.word + '!', '<em>' + esc(r.word) + '</em>'))) return;
-      $('#turnBox').hidden = false;
-      await Voice.pause(2600);
-      $('#turnBox').hidden = true;
-      if (my !== token) return;
-      Sound.pop();
-      if (!(await speak(r.word + '!', '<em>' + esc(r.word) + '</em> ⭐'))) return;
-      if (!(await speak(praise(), '<em>' + esc(r.word) + '</em> ⭐'))) return;
-    }
-
-    if (my !== token) return;
-    const hasActivity = (r.steps && r.steps.length) || r.count > 0;
-    $('#letsGoBtn').hidden = !hasActivity;
-    $('#callActions').hidden = false;
-    await speak(hasActivity ? "Let's go!" : 'Off you go!', highlight(r.phrase, r.word));
+    Stage.setMood('wait');
+    estado('waiting');
+    $('#bigActions').hidden = false;
   }
 
-  /* ───────── la actividad (pasos y cuenta en inglés) ───────── */
-
-  function startActivity() {
-    token++;
-    stepIndex = 0;
-    $('#actCounter').hidden = true;
-    $('#actDone').hidden = true;
-    $('#actNext').hidden = false;
-
-    // aquí la chica HACE la rutina: su sitio detrás, el objeto en la mano y el gesto
-    const scene = Scenes.forRoutine(routine);
-    $('#actSet').innerHTML = Scenes.set(scene);
-    paintCharacter($('#actBand'), caller,
-      { pose: 'still', prop: Scenes.prop(scene), action: Scenes.action(scene) });
-
-    show('screen-activity');
-    renderStep();
-  }
-
-  function renderStep() {
-    const r = routine;
-    const steps = r.steps || [];
-    const dots = $('#actDots');
-    dots.innerHTML = steps.map((_, i) => '<i class="' + (i === stepIndex ? 'on' : '') + '"></i>').join('');
-
-    if (stepIndex < steps.length) {
-      const st = steps[stepIndex];
-      $('#actEmoji').textContent = st.emoji || r.emoji || '⭐';
-      $('#actText').textContent = st.text;
-      $('#actNext').textContent = (stepIndex === steps.length - 1 && !(r.count > 0)) ? 'Finish ›' : 'Next ›';
-      sayStep(st.text);
-    } else {
-      startCounting();
-    }
-  }
-
-  async function sayStep(text) {
-    const my = token;
-    const svg = $('#actBand .kchar');
-    svg && svg.classList.add('speaking');
-    await Voice.say(text);
-    if (my !== token) return;
-    const svg2 = $('#actBand .kchar');
-    svg2 && svg2.classList.remove('speaking');
-  }
-
-  function nextStep() {
-    const r = routine;
-    const steps = r.steps || [];
-    if (stepIndex < steps.length - 1) {
-      stepIndex++;
-      renderStep();
-    } else if (r.count > 0 && $('#actCounter').hidden) {
-      stepIndex = steps.length;
-      startCounting();
-    } else {
-      celebrate();
-    }
-  }
-
-  async function startCounting() {
-    const my = token;
-    const r = routine;
-    if (!(r.count > 0)) { finishActivity(); return; }
-
-    $('#actNext').hidden = true;
-    $('#actEmoji').textContent = r.emoji || '⭐';
-    $('#actText').textContent = "Let's count to " + r.count + '!';
-    $('#actCounter').hidden = false;
-    const el = $('#actCounter');
-
-    await Voice.say("Let's count to " + r.count + '!');
-    for (let i = 1; i <= r.count; i++) {
-      if (my !== token) return;
-      el.textContent = i;
-      el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
-      Sound.tick(i);
-      await Voice.say(String(i), { rate: 1.05 });
-      await Voice.pause(180);
-    }
-    if (my !== token) return;
-    $('#actText').textContent = 'Finished!';
-    await Voice.say('Finished!');
-    if (my !== token) return;
-    await Voice.say(praise());
-    if (my !== token) return;
-    finishActivity();
-  }
-
-  function finishActivity() {
-    $('#actNext').hidden = true;
-    $('#actDone').hidden = false;
-  }
-
-  /* ───────── la celebración ───────── */
-
+  /* lo ha hecho: ¡fiesta! */
   async function celebrate() {
     token++;
     const my = token;
     const r = routine;
 
-    const isNew = Store.markDone(r.id);
+    Store.markDone(r.id);
     const p = Store.getProgress();
     const stars = p.done.length;
 
-    $('#winTitle').textContent = praise();
-    $('#winSub').textContent = r.done || '';
-    paintCharacter($('#winBand'), caller, { pose: 'dance', mic: true });
-    $('#winStar').textContent = '⭐'.repeat(Math.min(stars, 5)) || '⭐';
-    stopVideos();
-    show('screen-win');
-    Confetti.start(2600);
+    // primero se la ve HACIENDO la tarea y terminándola; luego, la fiesta
+    $('#bigActions').hidden = true;
+    $('#bubble').textContent = '';
+    estado('doing');
+    Stage.setMood('do', { scene: Scenes.forRoutine(r) });
+    await Voice.pause(Stage.duration('do'));
+    if (my !== token) return;
+
+    estado('party');
+    $('#partySub').textContent = r.done || '';
+    $('#partyStars').textContent = '⭐'.repeat(Math.max(1, Math.min(stars, 5)));
+    $('#partyText').hidden = false;
+    Stage.setMood('party');
+    Confetti.start(4200);
     Sound.cheer();
 
     const winVideo = await Media.get(r.id, 'winVideo');
     if (my !== token) return;
     if (winVideo) {
-      $('#winBand').style.display = 'none';
-      await playVideoBlob($('#winVideo'), winVideo);
-      $('#winBand').style.display = '';
+      await playVideoBlob(winVideo);
       if (my !== token) return;
+      stopVideos();
     }
 
-    await Voice.say($('#winTitle').textContent);
-    if (my !== token) return;
-    await Voice.say(r.done || '');
-    if (my !== token) return;
+    if (!(await say(FRASE_FIESTA))) return;
+    if (!(await say(r.done))) return;
+    $('#bubble').textContent = '';
 
-    if (isNew) {
-      await Voice.say(stars === 1 ? 'You have one star today!' : 'You have ' + stars + ' stars today!');
-    }
-    if (my !== token) return;
-
-    // ¿ha terminado todo el tramo del día?
+    // ¿ha terminado todo el tramo del día? Fiesta doble.
     const all = Store.getRoutines().filter(x => x.enabled !== false && x.period === r.period);
     if (all.length && all.every(x => p.done.indexOf(x.id) !== -1)) {
-      $('#winSub').textContent = 'All your ' + PERIOD_LABEL[r.period].toLowerCase() + ' routines are done!';
-      await Voice.say('Wow! You finished all your ' + PERIOD_LABEL[r.period].toLowerCase() + ' routines!');
-      Confetti.start(1800);
+      Confetti.start(3000);
+      Sound.cheer();
+      if (!(await say('Wow! You finished all your ' + PERIOD_LABEL[r.period].toLowerCase() + ' routines!'))) return;
+      $('#bubble').textContent = '';
     }
+
+    // y vuelve sola a casa, con la estrella puesta
+    setTimeout(() => { if (my === token) goHome(); }, 3500);
   }
 
+  /* todavía no: se despide con cariño y vuelve a casa (sin estrella, sin reñir) */
+  async function tryLater() {
+    token++;
+    const my = token;
+    $('#bigActions').hidden = true;
+    $('#bubble').textContent = '';
+
+    // la empieza, la deja a medias y se encoge de hombros: sin reñir
+    estado('skipping');
+    Stage.setMood('skip', { scene: Scenes.forRoutine(routine) });
+    await Voice.pause(Stage.duration('skip'));
+    if (my !== token) return;
+
+    estado('bye');
+    Stage.setMood('bye');
+    await say(FRASE_LUEGO);
+    if (my !== token) return;
+    setTimeout(() => { if (my === token) goHome(); }, 700);
+  }
 
   /* ───────── comprobar los audios ─────────
      Construye TODAS las frases que la app puede decir y mira cuáles no tienen
@@ -448,26 +364,10 @@ const App = (function () {
     const add = t => { if (t && lineas.indexOf(t) === -1) lineas.push(t); };
 
     Characters.LIST.forEach(c => add(c.hello));
-
     const rutinas = Store.getRoutines();
-    rutinas.forEach(r => {
-      add(r.phrase);
-      add(r.done);
-      if (r.word) add(r.word + '!');
-      (r.steps || []).forEach(st => add(st.text));
-      if (r.count > 0) {
-        add("Let's count to " + r.count + '!');
-        for (let i = 1; i <= r.count; i++) add(String(i));
-      }
-    });
-
-    add('Say it with me.');
-    add("Let's go!");
-    add('Off you go!');
-    add('Finished!');
-    PRAISE.forEach(add);
-    add('You have one star today!');
-    for (let n = 2; n <= rutinas.length; n++) add('You have ' + n + ' stars today!');
+    rutinas.forEach(r => { add(r.phrase); add(r.done); });
+    add(FRASE_FIESTA);
+    add(FRASE_LUEGO);
     ['morning', 'afternoon', 'evening'].forEach(per =>
       add('Wow! You finished all your ' + PERIOD_LABEL[per].toLowerCase() + ' routines!'));
 
@@ -486,30 +386,9 @@ const App = (function () {
       renderHome();
     });
 
-    $('#callBack').addEventListener('click', goHome);
-    $('#actBack').addEventListener('click', goHome);
-    $('#winBack').addEventListener('click', goHome);
-
-    $('#answerBtn').addEventListener('click', answer);
-    $('#againBtn').addEventListener('click', async () => {
-      const r = routine;
-      const blob = await Media.get(r.id, 'voice');
-      if (blob) {
-        $('#callBubble').innerHTML = highlight(r.phrase, r.word);
-        mouth(true); await Voice.playBlob(blob); mouth(false);
-      } else {
-        speak(r.phrase, highlight(r.phrase, r.word));
-      }
-    });
-    $('#letsGoBtn').addEventListener('click', startActivity);
-    $('#doneBtn').addEventListener('click', celebrate);
-
-    $('#actNext').addEventListener('click', nextStep);
-    $('#actDone').addEventListener('click', celebrate);
-    $('#actAgain').addEventListener('click', () => {
-      const steps = routine.steps || [];
-      if (stepIndex < steps.length) sayStep(steps[stepIndex].text);
-    });
+    $('#showBack').addEventListener('click', goHome);
+    $('#congratsBtn').addEventListener('click', celebrate);
+    $('#laterBtn').addEventListener('click', tryLater);
 
     // la rueda de padres se abre manteniéndola pulsada (una niña no lo hace sin querer)
     const gear = $('#gearBtn');
@@ -533,7 +412,8 @@ const App = (function () {
 
     // si el móvil se bloquea o cambiamos de app, callamos
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) { token++; Voice.stop(); Sound.stopRing(); }
+      if (document.hidden) { token++; Voice.stop(); Sound.stopRing(); Stage.pause(); }
+      else Stage.resume();
     });
 
     document.addEventListener('pointerdown', () => {

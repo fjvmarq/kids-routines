@@ -9,7 +9,7 @@
      siempre, y la caché es la red de seguridad cuando no hay cobertura. Al
      revés, una copia mala se queda pegada para siempre. */
 
-const CACHE = 'kids-routines-v7';
+const CACHE = 'kids-routines-v8';
 
 const FILES = [
   './',
@@ -21,9 +21,20 @@ const FILES = [
   'js/data.js',
   'js/scenes.js',
   'js/confetti.js',
+  'js/stage.js',
+  'js/stage3d.js',
+  'js/rooms3d.js',
   'js/app.js',
   'js/parents.js',
   'manifest.webmanifest',
+  'vendor/three/three.module.js',
+  'vendor/three/three.core.js',
+  'vendor/three/addons/loaders/GLTFLoader.js',
+  'vendor/three/addons/utils/BufferGeometryUtils.js',
+  'vendor/three/addons/utils/SkeletonUtils.js',
+  'vendor/three-vrm.module.min.js',
+  'vendor/three-vrm-animation.module.min.js',
+  'anim/idle_loop.vrma',
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/maskable-512.png'

@@ -50,6 +50,8 @@ VOCES = [
 
 # ── frases fijas de la app: tienen que coincidir LETRA A LETRA con js/app.js ──
 FIXED = [
+    "Congratulations!",
+    "OK! See you later!",
     "Say it with me.",
     "Let's go!",
     "Off you go!",
@@ -162,6 +164,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--list", action="store_true", help="sólo enseña las frases")
     ap.add_argument("--solo", help="generar sólo la voz de esta chica (yuna/nari/soomi)")
+    ap.add_argument("--missing", action="store_true",
+                    help="generar sólo las frases que aún no tienen fichero")
     args = ap.parse_args()
 
     frases = collect()
@@ -192,11 +196,17 @@ def main():
     for cfg in quiere:
         destino = os.path.join(AUDIO, cfg["id"])
         os.makedirs(destino, exist_ok=True)
-        print("%s — %s" % (cfg["id"], cfg["nombre"]), flush=True)
-        if cfg["motor"] == "kokoro":
-            genera_kokoro(cfg, frases, destino)
+        lista = frases
+        if args.missing:
+            lista = [f for f in frases
+                     if not os.path.exists(os.path.join(destino, slug(f) + ".mp3"))]
+        print("%s — %s (%d frases)" % (cfg["id"], cfg["nombre"], len(lista)), flush=True)
+        if not lista:
+            pass
+        elif cfg["motor"] == "kokoro":
+            genera_kokoro(cfg, lista, destino)
         else:
-            genera_piper(cfg, frases, destino)
+            genera_piper(cfg, lista, destino)
         manifest["voices"][cfg["id"]] = {
             "dir": cfg["id"] + "/", "voice": cfg["nombre"], "engine": cfg["motor"],
         }

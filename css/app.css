@@ -486,3 +486,107 @@ body::before{
 .warn-line{color:#ffd447; font-weight:700}
 
 .p-item .txt .voz-de{display:block; color:var(--cyan); font-size:11.5px}
+
+/* ═════════════ LA ESCENA: la llamada y la fiesta ═════════════
+   La chica en primer plano, ocupando la pantalla. Encima, lo justo: quién
+   llama, lo que dice (bocadillo) y dos botones enormes. */
+.show-screen{padding:0; overflow:hidden}
+.show-screen .stage{
+  position:absolute; inset:0; z-index:1;
+  background:
+    radial-gradient(55% 70% at 30% 110%, rgba(255,79,163,.30), transparent 70%),
+    radial-gradient(45% 60% at 12% 0%, rgba(155,92,255,.40), transparent 70%),
+    radial-gradient(45% 60% at 60% 0%, rgba(63,224,255,.28), transparent 70%),
+    linear-gradient(180deg, #1c0f3d 0%, #120a2a 100%);
+}
+.show-screen .stage canvas{position:absolute; inset:0; width:100%; height:100%; display:block}
+.stage-2d{position:absolute; left:4%; bottom:0; height:96%; width:52%;
+  display:flex; align-items:flex-end; justify-content:center}
+.stage-2d svg{height:100%; width:auto}
+.show-screen #confetti{z-index:6}
+.show-screen .back{z-index:9}
+.show-screen .media-video{z-index:5}
+
+/* quién llama */
+.call-badge{
+  position:absolute; z-index:4; top:calc(env(safe-area-inset-top) + 10px); left:50%;
+  transform:translateX(-50%); display:flex; align-items:center; gap:10px;
+  background:rgba(12,6,30,.62); border:1px solid rgba(255,255,255,.18);
+  padding:7px 18px 7px 10px; border-radius:999px; backdrop-filter:blur(6px);
+}
+.call-badge .phone-ico{width:36px; height:36px; border-radius:50%; display:grid; place-items:center;
+  background:linear-gradient(140deg,#49e06a,#17a94a); font-size:18px}
+.call-who{display:flex; flex-direction:column; line-height:1.1}
+.call-who b{font-size:19px}
+.call-who span{font-size:13px; color:var(--ink-soft)}
+[data-state="ringing"] .call-badge .phone-ico{animation:llamando 1.6s ease-in-out infinite}
+@keyframes llamando{
+  0%,100%{transform:rotate(0) scale(1); box-shadow:0 0 0 0 rgba(73,224,106,.6)}
+  20%{transform:rotate(-14deg) scale(1.08)}
+  40%{transform:rotate(14deg) scale(1.08); box-shadow:0 0 0 12px rgba(73,224,106,0)}
+  60%{transform:rotate(-8deg) scale(1.04)}
+}
+[data-state="party"] .call-badge,[data-state="bye"] .call-badge{opacity:0; transition:opacity .4s}
+
+/* lo que dice */
+.show-screen .bubble{
+  position:absolute; z-index:4; right:4%; top:22%; width:40%; max-width:460px;
+  background:rgba(255,255,255,.96); color:#241046; border-radius:22px; padding:14px 20px;
+  font-size:24px; font-weight:800; line-height:1.25; box-shadow:0 14px 30px rgba(0,0,0,.35);
+  animation:burbuja .35s ease-out;
+}
+.show-screen .bubble::before{content:""; position:absolute; left:-12px; top:26px;
+  border:12px solid transparent; border-right-color:rgba(255,255,255,.96); border-left:0}
+.show-screen .bubble:empty{display:none}
+@keyframes burbuja{from{opacity:0; transform:translateY(8px) scale(.96)}to{opacity:1; transform:none}}
+
+/* los dos botones: enormes, para un dedo de cinco años */
+.big-actions{position:absolute; z-index:4; right:4%; bottom:calc(env(safe-area-inset-bottom) + 6%);
+  width:40%; max-width:460px; display:flex; flex-direction:column; gap:14px;
+  animation:burbuja .45s ease-out}
+.big-btn{
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  height:78px; border:none; border-radius:999px; font-size:25px; font-weight:800;
+  color:#fff; box-shadow:0 12px 26px rgba(0,0,0,.35); transition:transform .15s ease;
+}
+.big-btn:active{transform:scale(.95)}
+.big-btn .ico{font-size:32px}
+.big-btn.yes{background:linear-gradient(140deg,#ffcc33 0%,#ff7ab0 55%,#b86bff 100%); color:#3a1030;
+  animation:invita 2.6s ease-in-out infinite}
+.big-btn.later{height:62px; font-size:20px; background:rgba(255,255,255,.16);
+  border:2px solid rgba(255,255,255,.28)}
+@keyframes invita{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+
+/* la fiesta */
+.party-text{position:absolute; z-index:4; right:4%; top:50%; transform:translateY(-50%);
+  width:42%; text-align:center; display:flex; flex-direction:column; align-items:center; gap:10px}
+.party-title{font-size:44px; font-weight:800; line-height:1.05;
+  background:linear-gradient(120deg,#ffd447,#ff5fb0,#3fe0ff); -webkit-background-clip:text;
+  background-clip:text; color:transparent; animation:pop .5s ease;
+  filter:drop-shadow(0 4px 14px rgba(255,95,176,.35))}
+.party-sub{font-size:21px; font-weight:700; color:#fff}
+.party-stars{font-size:44px; letter-spacing:4px; animation:starfly .9s ease}
+[data-state="party"] .bubble{top:auto; bottom:8%}
+
+@media (max-height:380px){
+  .big-btn{height:62px; font-size:21px} .big-btn.later{height:50px; font-size:17px}
+  .show-screen .bubble{font-size:20px; top:20%}
+  .party-title{font-size:36px}
+}
+
+/* 2D, «I'll try later»: baja el brazo con el objeto y ladea la cabeza */
+.skip .arm-r{animation:suelta 2.6s ease-in-out forwards}
+.skip .head{animation:encoge 2.6s ease-in-out forwards}
+@keyframes suelta{0%{transform:rotate(-70deg)} 45%{transform:rotate(-80deg)} 100%{transform:rotate(8deg)}}
+@keyframes encoge{0%,40%{transform:rotate(0)} 100%{transform:rotate(-7deg)}}
+
+/* en la fiesta, la frase la dice el bocadillo: no la repetimos debajo del título */
+[data-state="party"] .party-sub{display:none}
+
+/* mientras llegan la chica y su habitación: un brillo que gira en el centro */
+.stage.cargando::after{
+  content:""; position:absolute; left:28%; top:50%; width:64px; height:64px; margin:-32px 0 0 -32px;
+  border-radius:50%; border:5px solid rgba(255,255,255,.18); border-top-color:#ff5fb0;
+  border-right-color:#3fe0ff; animation:gira 1s linear infinite; z-index:3;
+}
+@keyframes gira{to{transform:rotate(360deg)}}

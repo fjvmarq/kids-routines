@@ -175,8 +175,19 @@ python -m http.server 8777
 - **Un escenario nuevo es una llamada** a `Scenes.register(...)`, y desde la
   zona de padres se puede asignar cualquier escenario a cualquier rutina.
 
-## Licencia
+## Licencia y créditos
 
-Uso privado y familiar. Voces generadas con
-[Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0) y
-[Piper](https://github.com/OHF-Voice/piper1-gpl) (voces de dominio público).
+Uso privado y familiar. Todo lo de terceros que va dentro se puede publicar:
+
+| Qué | De dónde | Licencia |
+|---|---|---|
+| Yuna, Nari y Soomi en 3D (`models/`) | Muestras oficiales de VRoid (pixiv): *Sendagaya Shino*, *Victoria Rubin* y *Vita*. Texturas reducidas a 1024 px con `tools/shrink-vrm.py` | **CC0** (leído dentro de cada fichero y confirmado por pixiv) |
+| Movimiento de reposo (`anim/idle_loop.vrma`) | [pixiv/ChatVRM](https://github.com/pixiv/ChatVRM) | MIT |
+| Muebles (`rooms/`) | [Furniture Kit de Kenney](https://kenney.nl/assets/furniture-kit) | **CC0** (`rooms/LICENSE-kenney.txt`) |
+| Motor 3D (`vendor/`) | [three.js](https://threejs.org) r186 y [three-vrm](https://github.com/pixiv/three-vrm) 3.5.5 | MIT |
+| Voces | [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) y [Piper](https://github.com/OHF-Voice/piper1-gpl) (voz *cori*, dominio público) | Apache-2.0 / dominio público |
+
+Se descartaron a propósito, aunque habrían quedado bien: el *VRMA Motion Pack* de
+pixiv (prohíbe redistribuir los movimientos), las animaciones de Mixamo y de Ready
+Player Me (tampoco), las muestras *AvatarSample_A/B/C* de VRoid (licencia «Other»,
+no CC0) y el *Motion Dataset* de Bandai Namco (sólo no comercial).

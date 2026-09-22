@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kids Routines — pruebas del 3D</title>
+<link rel="stylesheet" href="css/app.css">
+<style>
+  body{overflow:hidden}
+  #stage{position:fixed; inset:0}
+  .panel{position:fixed; right:8px; top:8px; z-index:10; display:flex; flex-direction:column; gap:6px;
+         background:rgba(0,0,0,.45); padding:8px; border-radius:12px; font:13px system-ui}
+  .panel button{padding:6px 10px; border:0; border-radius:8px; background:#fff2; color:#fff}
+  .panel button.on{background:#ff4fa3}
+  .fila{display:flex; gap:4px; flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="show-screen" style="position:fixed; inset:0"><div class="stage" id="stage"></div></div>
+<div class="panel">
+  <div class="fila" id="chicas"></div>
+  <div class="fila" id="moods"></div>
+  <div class="fila" id="escenas"></div>
+  <button id="habla">hablar on/off</button>
+</div>
+
+<script src="js/characters.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/stage.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "./vendor/three/three.module.js",
+  "three/addons/": "./vendor/three/addons/",
+  "@pixiv/three-vrm": "./vendor/three-vrm.module.min.js",
+  "@pixiv/three-vrm-animation": "./vendor/three-vrm-animation.module.min.js"
+} }
+</script>
+<script type="module" src="js/stage3d.js"></script>
+<script>
+  let escena = 'teeth', hablando = false;
+  Stage.mount(document.getElementById('stage'));
+  const boton = (txt, fn, cont) => {
+    const b = document.createElement('button'); b.textContent = txt; b.onclick = fn;
+    document.getElementById(cont).appendChild(b); return b;
+  };
+  ['yuna', 'nari', 'soomi'].forEach(id => boton(id, () => Stage.setCharacter(Characters.byId(id)), 'chicas'));
+  ['wait', 'ring', 'talk', 'do', 'skip', 'party', 'bye'].forEach(m =>
+    boton(m, () => Stage.setMood(m, { scene: escena }), 'moods'));
+  ['teeth', 'eat', 'sleep', 'tidy', 'book', 'desk', 'park', 'stage'].forEach(e =>
+    boton(e, () => { escena = e; Stage.setScene(e); }, 'escenas'));
+  document.getElementById('habla').onclick = () => { hablando = !hablando; Stage.talking(hablando); };
+
+  // cuando el 3D esté listo, arrancar con Yuna esperando
+  const espera = setInterval(() => {
+    if (Stage.is3D()) {
+      clearInterval(espera);
+      Stage.setCharacter(Characters.byId('yuna'));
+      Stage.setMood('wait');
+      Stage.resume();
+    }
+  }, 200);
+</script>
+</body>
+</html>
