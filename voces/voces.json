@@ -2,34 +2,94 @@
  "texto": "Hi! It's me, Yuna! It's time to brush your teeth. Say it with me. Toothbrush! Great job!",
  "voces": [
   {
-   "id": "kokoro-bf-emma",
-   "etiqueta": "Kokoro · Emma · británica",
-   "motor": "Kokoro-82M (Apache-2.0)"
+   "id": "emma",
+   "etiqueta": "Emma · británica",
+   "motor": "Kokoro-82M (Apache-2.0)",
+   "nina": false
   },
   {
-   "id": "kokoro-bf-isabella",
-   "etiqueta": "Kokoro · Isabella · británica",
-   "motor": "Kokoro-82M (Apache-2.0)"
+   "id": "emma-nina",
+   "etiqueta": "Emma · británica · MÁS DE NIÑA",
+   "motor": "Kokoro-82M (Apache-2.0)",
+   "nina": true
   },
   {
-   "id": "kokoro-af-heart",
-   "etiqueta": "Kokoro · Heart · americana",
-   "motor": "Kokoro-82M (Apache-2.0)"
+   "id": "lily",
+   "etiqueta": "Lily · británica · la más juvenil",
+   "motor": "Kokoro-82M (Apache-2.0)",
+   "nina": false
   },
   {
-   "id": "kokoro-af-bella",
-   "etiqueta": "Kokoro · Bella · americana",
-   "motor": "Kokoro-82M (Apache-2.0)"
+   "id": "lily-nina",
+   "etiqueta": "Lily · británica · MÁS DE NIÑA",
+   "motor": "Kokoro-82M (Apache-2.0)",
+   "nina": true
   },
   {
-   "id": "piper-cori",
-   "etiqueta": "Piper · Cori · británica",
-   "motor": "Piper (dominio público)"
+   "id": "alice",
+   "etiqueta": "Alice · británica",
+   "motor": "Kokoro-82M (Apache-2.0)",
+   "nina": false
   },
   {
-   "id": "piper-kristin",
-   "etiqueta": "Piper · Kristin · americana",
-   "motor": "Piper (dominio público)"
+   "id": "alice-nina",
+   "etiqueta": "Alice · británica · MÁS DE NIÑA",
+   "motor": "Kokoro-82M (Apache-2.0)",
+   "nina": true
+  },
+  {
+   "id": "sky-nina",
+   "etiqueta": "Sky · americana · MÁS DE NIÑA",
+   "motor": "Kokoro-82M (Apache-2.0)",
+   "nina": true
+  },
+  {
+   "id": "nicole-nina",
+   "etiqueta": "Nicole · americana · MÁS DE NIÑA",
+   "motor": "Kokoro-82M (Apache-2.0)",
+   "nina": true
+  },
+  {
+   "id": "jessica-nina",
+   "etiqueta": "Jessica · americana · MÁS DE NIÑA",
+   "motor": "Kokoro-82M (Apache-2.0)",
+   "nina": true
+  },
+  {
+   "id": "heart-nina",
+   "etiqueta": "Heart · americana · MÁS DE NIÑA",
+   "motor": "Kokoro-82M (Apache-2.0)",
+   "nina": true
+  },
+  {
+   "id": "emma-mucho",
+   "etiqueta": "Emma · británica · MUY de niña",
+   "motor": "Kokoro-82M (Apache-2.0)",
+   "nina": true
+  },
+  {
+   "id": "lily-mucho",
+   "etiqueta": "Lily · británica · MUY de niña",
+   "motor": "Kokoro-82M (Apache-2.0)",
+   "nina": true
+  },
+  {
+   "id": "cori",
+   "etiqueta": "Cori · británica",
+   "motor": "Piper (dominio público)",
+   "nina": false
+  },
+  {
+   "id": "cori-nina",
+   "etiqueta": "Cori · británica · MÁS DE NIÑA",
+   "motor": "Piper (dominio público)",
+   "nina": true
+  },
+  {
+   "id": "kristin-nina",
+   "etiqueta": "Kristin · americana · MÁS DE NIÑA",
+   "motor": "Piper (dominio público)",
+   "nina": true
   }
  ]
 }
