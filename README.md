@@ -1,12 +1,12 @@
 # Kids Routines ⭐
 
 Una app de rutinas para niñas y niños pequeños, **en inglés**, con un grupo de
-K-pop dibujado a mano: **Yuna, Nari y Soomi**. Inspirada en las tarjetas de
-rutina de Kids&Us: la niña toca una tarjeta, **le llama una del grupo por
-teléfono**, le dice en inglés lo que toca hacer, le enseña a repetir la palabra
-clave, **la acompaña haciéndolo** (con su escenario y su gesto: cepillarse,
-enjabonarse, comer, recoger…) y al terminar pulsa **I did it!** y sale la fiesta
-con confeti y una estrella.
+K-pop **en 3D**: **Yuna, Nari y Soomi**. Como las tarjetas de rutina de Kids&Us:
+la niña toca una tarjeta y **una de las chicas la llama por teléfono** desde el
+sitio de la rutina (el baño, la cocina, su cuarto…), le dice en inglés lo que
+toca, y aparecen dos botones: **Congratulations!** (lo ha hecho: se ve a la
+chica haciéndolo y hay fiesta ahí mismo) o **I'll try later** (todavía no: la
+deja a medias y se despide, sin reñir).
 
 Trae **38 rutinas** de fábrica, se usa **en horizontal** y funciona **sin
 internet**. Sin anuncios, sin cuentas y sin recoger nada: todo lo que guarda se
@@ -89,15 +89,15 @@ Para comparar candidatas, `tools/make-samples.py` escribe `voces/` y la página
 
 - **Las tarjetas** están repartidas en Morning · Afternoon · Evening, y la app
   abre por el tramo que toca según la hora.
-- **Tocar una tarjeta** = llamada entrante: suena el teléfono, vibra, y la niña
-  descuelga con el botón verde (si no lo pulsa, se descuelga sola).
-- La chica saluda, **dice la frase en inglés** y luego viene lo importante:
-  **«Say it with me»** — dice la palabra clave, deja un silencio para que la
-  repita, y la felicita.
-- **Let's do it** enseña los pasos de uno en uno y, si la rutina lo lleva,
-  **cuenta en inglés** mientras se lava las manos o recoge los juguetes.
-- **I did it!** → confeti, fanfarria, baile y una estrella. Al completar todo un
-  tramo del día, celebración extra.
+- **Tocar una tarjeta** = la chica llama **en primer plano** (rin rin) desde la
+  habitación de esa rutina. No hay que descolgar: empieza sola.
+- Saluda y **dice en inglés lo que toca** («It's time to brush your teeth!»).
+- **🎉 Congratulations!** → se la ve **haciendo la tarea** (cepillándose,
+  bañándose, comiendo…) y la **fiesta** es en esa misma habitación, con su
+  efecto: pompas de jabón en el baño, corazones en la cocina, estrellas en el
+  cuarto. Estrella para el día.
+- **🕐 I'll try later** → la empieza, la deja a medias, se encoge de hombros y
+  dice «OK! See you later!».
 
 ## La zona de padres
 
@@ -121,10 +121,10 @@ niña de 5 años no lo hace sin querer). Está en español, y permite:
 
 ## Sobre los personajes
 
-**Yuna, Nari y Soomi** son personajes **originales**, dibujados en SVG dentro de
-`js/characters.js`. No copian a ningún grupo ni a ninguna serie: ni sus dibujos,
-ni sus nombres, ni sus canciones. Eso permite publicar la app y compartir el
-enlace sin problemas de derechos.
+**Yuna, Nari y Soomi** son modelos 3D anime de las **muestras oficiales CC0 de
+VRoid** (pixiv): *Sendagaya Shino*, *Victoria Rubin* y *Vita*. Se pueden publicar
+y modificar sin condiciones. Si el móvil no puede con el 3D, la app usa un dibujo
+2D propio (`js/characters.js`).
 
 Si en casa queréis ver otros personajes, para eso están el **retrato propio** de
 cada chica y la imagen o el vídeo propios de cada rutina: los pones tú en la
@@ -149,7 +149,11 @@ python -m http.server 8777
 | `js/audio.js` | el «rin rin», la fanfarria, los audios grabados y la voz |
 | `js/store.js` | ajustes y rutinas (localStorage) + medios propios (IndexedDB) |
 | `js/data.js` | las 38 rutinas de fábrica (y `CATALOG_VERSION`) |
-| `js/app.js` | el hilo: casa → llamada → actividad → celebración |
+| `js/app.js` | el hilo: casa → llamada → hacerlo o dejarlo → fiesta |
+| `js/stage.js` | el escenario del personaje: decide 3D o 2D |
+| `js/stage3d.js` | las chicas en 3D: reposo capturado, posturas y cara |
+| `js/rooms3d.js` | las habitaciones y los efectos de cada fiesta |
+| `dev-3d.html` | página de pruebas del 3D: cada chica, postura y habitación |
 | `js/parents.js` | la zona de padres |
 | `sw.js` | funcionar sin conexión |
 | `dev-animaciones.html` | las tres chicas en todos sus estados, para juzgar el movimiento |
