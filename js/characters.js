@@ -18,24 +18,24 @@ const Characters = (function () {
       id: 'yuna', name: 'Yuna', hello: "Hi! It's me, Yuna!", pitch: 1.45, rate: 0.95,
       hair: '#8b5cf6', hairDark: '#4c1d95', hairLight: '#c9b6ff', streak: '#ff4fa3',
       eye: '#a855f7', eyeDark: '#3b1470',
-      outfit: '#ff4fa3', outfit2: '#ffd1e8', trim: '#ffd447',
-      socks: '#ffffff', boots: '#2a1b4d',
+      outfit: '#2b1b4d', outfit2: '#4a2f80', trim: '#ff4fa3', neon: '#ffd447',
+      socks: '#f3ecff', boots: '#140c28',
       skin: '#ffe3d2', shade: '#f2b79c', style: 'long'
     },
     {
       id: 'nari', name: 'Nari', hello: "Hello! Nari here!", pitch: 1.3, rate: 0.98,
       hair: '#ff6fae', hairDark: '#b81f6d', hairLight: '#ffc2dd', streak: '#ffd447',
       eye: '#ff7aa8', eyeDark: '#6d1038',
-      outfit: '#7b4bd8', outfit2: '#d9c6ff', trim: '#3fe0ff',
-      socks: '#f3e9ff', boots: '#241638',
+      outfit: '#241638', outfit2: '#43265f', trim: '#ff6fae', neon: '#3fe0ff',
+      socks: '#ffeaf4', boots: '#120a1e',
       skin: '#fbd3b4', shade: '#e0a180', style: 'ponytail'
     },
     {
       id: 'soomi', name: 'Soomi', hello: "Hey! I'm Soomi!", pitch: 1.6, rate: 0.92,
       hair: '#38c6ee', hairDark: '#0f6f95', hairLight: '#b6f0ff', streak: '#7dff9b',
       eye: '#34d3e8', eyeDark: '#08475e',
-      outfit: '#ffd447', outfit2: '#fff4c9', trim: '#ff4fa3',
-      socks: '#eafaff', boots: '#16263f',
+      outfit: '#16263f', outfit2: '#27436b', trim: '#38c6ee', neon: '#7dff9b',
+      socks: '#eafaff', boots: '#0b1526',
       skin: '#ffdcc4', shade: '#eaae88', style: 'halfbuns'
     }
   ];
@@ -192,6 +192,7 @@ const Characters = (function () {
       <path d="M85,218 h14 v34 h-14 Z" fill="${c.skin}"/>
       <path d="M85,244 h15 v58 q0,4 -7.5,4 q-7.5,0 -7.5,-4 Z" fill="${c.socks}"/>
       <rect x="85" y="244" width="15" height="5" fill="${c.trim}"/>
+      <rect x="85" y="252" width="15" height="2" fill="${c.neon}" opacity=".8"/>
       <path d="M83,300 h18 v38 q0,6 -6,6 h-8 q-4,0 -4,-6 Z" fill="${c.boots}"/>
       <path d="M81,336 h22 v8 h-22 Z" fill="${c.trim}" opacity=".8"/>
     </g>
@@ -199,6 +200,7 @@ const Characters = (function () {
       <path d="M101,218 h14 v34 h-14 Z" fill="${c.skin}"/>
       <path d="M100,244 h15 v58 q0,4 -7.5,4 q-7.5,0 -7.5,-4 Z" fill="${c.socks}"/>
       <rect x="100" y="244" width="15" height="5" fill="${c.trim}"/>
+      <rect x="100" y="252" width="15" height="2" fill="${c.neon}" opacity=".8"/>
       <path d="M99,300 h18 v38 q0,6 -4,6 h-8 q-6,0 -6,-6 Z" fill="${c.boots}"/>
       <path d="M97,336 h22 v8 h-22 Z" fill="${c.trim}" opacity=".8"/>
     </g>
@@ -210,32 +212,43 @@ const Characters = (function () {
     <path d="M76,126 q24,-14 48,0 l-4,9 q-20,-9 -40,0 Z" fill="${c.skin}"/>
 
     <!-- top corto -->
-    <path d="M76,126 q24,-13 48,0 l-5,44 q-19,8 -38,0 Z" fill="url(#${g}o)"/>
-    <path d="M76,126 q10,12 24,12 q14,0 24,-12 l-3,-6 q-21,10 -42,0 Z" fill="${c.outfit2}" opacity=".75"/>
-    <path d="M81,170 q19,7 38,0 l-1,6 q-18,6 -36,0 Z" fill="${c.trim}" opacity=".9"/>
-    ${star(100, 148, 8, '#ffffff', 'sparkle')}
+    <path d="M78,126 q22,-12 44,0 l-4,40 q-18,7 -36,0 Z" fill="${c.trim}"/>
+    <path d="M78,126 q10,11 22,11 q12,0 22,-11 l-3,-6 q-19,9 -38,0 Z" fill="${c.neon}" opacity=".35"/>
+    ${star(100, 146, 7, '#ffffff', 'sparkle')}
+
+    <!-- chaqueta abierta, el toque de escenario -->
+    <path d="M76,126 q-6,3 -7,12 l-3,48 q10,5 18,2 l4,-46 q-6,-11 -12,-16 Z" fill="url(#${g}o)"/>
+    <path d="M124,126 q6,3 7,12 l3,48 q-10,5 -18,2 l-4,-46 q6,-11 12,-16 Z" fill="url(#${g}o)"/>
+    <path d="M76,126 q-6,3 -7,12 l-1,10 q6,2 10,0 l2,-14 Z" fill="${c.neon}" opacity=".55"/>
+    <path d="M124,126 q6,3 7,12 l1,10 q-6,2 -10,0 l-2,-14 Z" fill="${c.neon}" opacity=".55"/>
 
     <!-- choker -->
-    <rect x="89" y="114" width="22" height="6" rx="3" fill="${c.boots}"/>
-    <circle cx="100" cy="122" r="3.2" fill="${c.trim}"/>
+    <rect x="89" y="114" width="22" height="6" rx="3" fill="#140c28"/>
+    <circle cx="100" cy="122" r="3.2" fill="${c.neon}"/>
 
-    <!-- barriga y falda plisada -->
-    <path d="M86,176 h28 v10 h-28 Z" fill="${c.skin}"/>
-    <path d="M85,184 q15,7 30,0 l14,40 q-29,12 -58,0 Z" fill="${c.outfit}"/>
-    <g stroke="${c.outfit2}" stroke-width="1.5" opacity=".5" fill="none">
-      <path d="M92,188 l-4,34"/><path d="M100,190 l0,34"/><path d="M108,188 l4,34"/>
-    </g>
-    <rect x="84" y="182" width="32" height="6" rx="3" fill="${c.trim}"/>
+    <!-- barriga, shorts y cinturón -->
+    <path d="M86,166 h28 v12 h-28 Z" fill="${c.skin}"/>
+    <path d="M84,176 q16,7 32,0 l9,34 q-25,10 -50,0 Z" fill="${c.outfit}"/>
+    <path d="M84,176 q16,7 32,0 l3,10 q-19,7 -38,0 Z" fill="${c.outfit2}" opacity=".7"/>
+    <rect x="83" y="174" width="34" height="7" rx="3.5" fill="#140c28"/>
+    <rect x="95" y="174" width="10" height="7" rx="2" fill="${c.trim}"/>
+    <path d="M84,182 q6,8 14,9" stroke="${c.neon}" stroke-width="1.6" fill="none" opacity=".8"/>
+    <circle cx="99" cy="191" r="1.8" fill="${c.neon}"/>
+
+    <!-- sombra propia: un lado más oscuro, que es lo que da volumen -->
+    <path d="M100,110 v120 q-18,-4 -22,-18 l6,-52 q-8,-12 -4,-30 Z" fill="#000" opacity=".12"/>
 
     <!-- brazos -->
     <g class="arm-l" style="transform-origin:80px 130px">
       <path d="M74,128 q-8,4 -9,13 l-3,42 q0,6 6,6 q6,0 7,-6 l4,-42 Z" fill="${c.skin}"/>
-      <path d="M74,128 q-8,4 -9,13 l-1,7 q8,4 15,-2 l2,-13 Z" fill="${c.outfit}"/>
+      <path d="M74,128 q-8,4 -9,13 l-2,16 q8,4 16,-2 l3,-21 Z" fill="url(#${g}o)"/>
+      <path d="M65,152 q8,4 16,-2 l-1,5 q-8,5 -16,1 Z" fill="${c.neon}" opacity=".7"/>
       <circle cx="68" cy="189" r="7" fill="${c.skin}"/>
     </g>
     <g class="arm-r" style="transform-origin:120px 130px">
       <path d="M126,128 q8,4 9,13 l3,42 q0,6 -6,6 q-6,0 -7,-6 l-4,-42 Z" fill="${c.skin}"/>
-      <path d="M126,128 q8,4 9,13 l1,7 q-8,4 -15,-2 l-2,-13 Z" fill="${c.outfit}"/>
+      <path d="M126,128 q8,4 9,13 l2,16 q-8,4 -16,-2 l-3,-21 Z" fill="url(#${g}o)"/>
+      <path d="M135,152 q-8,4 -16,-2 l1,5 q8,5 16,1 Z" fill="${c.neon}" opacity=".7"/>
       <circle cx="132" cy="189" r="7" fill="${c.skin}"/>
       ${o.mic ? `<rect x="128.5" y="172" width="7" height="24" rx="3.5" fill="#3a2a5c"/>
                  <circle cx="132" cy="170" r="7.5" fill="#e6e8f2"/>
@@ -250,8 +263,11 @@ const Characters = (function () {
           fill="${c.skin}"/>
     <path d="M70,52 c-4,-1 -6,3 -5,7 c1,5 4,9 8,8 Z" fill="${c.skin}"/>
     <path d="M130,52 c4,-1 6,3 5,7 c-1,5 -4,9 -8,8 Z" fill="${c.skin}"/>
-    <circle cx="69" cy="63" r="2.6" fill="${c.trim}"/>
-    <circle cx="131" cy="63" r="2.6" fill="${c.trim}"/>
+    <circle cx="69" cy="63" r="2.6" fill="${c.neon}"/>
+    <circle cx="131" cy="63" r="2.6" fill="${c.neon}"/>
+    ${star(131, 70, 4.5, c.trim)}
+    <path d="M100,26 c-19,0 -30,14 -30,38 c0,20 5,34 14,43 c-4,-16 -6,-34 -5,-50
+             c1,-16 9,-27 21,-31 Z" fill="#000" opacity=".07"/>
 
     ${eye(82, 68, c, g, false)}
     ${eye(118, 68, c, g, true)}
