@@ -75,6 +75,64 @@ const Sound = (function () {
 })();
 
 
+/* ───────── audios pregrabados ─────────
+   Si en audio/ hay un clip para una frase, se usa ESE en lugar de la voz del
+   móvil: así la niña oye siempre la misma voz inglesa, buena y alegre, y la app
+   suena igual en todos los teléfonos. Si falta el clip, habla el móvil. */
+const Pack = (function () {
+  let files = {};        // { clave: nombre de fichero }
+  let base = 'audio/';
+  let ready = false;
+  const cache = {};      // Audio ya creados, para que no haya retardo la 2ª vez
+
+  /* la clave de una frase es la propia frase, simplificada */
+  function key(text) {
+    return String(text || '')
+      .toLowerCase()
+      .replace(/[‘’']/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 70);
+  }
+
+  async function load() {
+    try {
+      const res = await fetch('audio/manifest.json', { cache: 'no-cache' });
+      if (!res.ok) return false;
+      const data = await res.json();
+      files = data.files || {};
+      base = data.base || 'audio/';
+      ready = Object.keys(files).length > 0;
+      return ready;
+    } catch (e) {
+      return false;        // sin pack no pasa nada: habla el móvil
+    }
+  }
+
+  function has(text) { return ready && !!files[key(text)]; }
+
+  function play(text) {
+    return new Promise(resolve => {
+      const k = key(text);
+      if (!ready || !files[k]) { resolve(false); return; }
+      let a = cache[k];
+      if (!a) { a = new Audio(base + files[k]); a.preload = 'auto'; cache[k] = a; }
+      const finish = () => { a.onended = a.onerror = null; resolve(true); };
+      a.onended = finish;
+      a.onerror = () => { a.onended = a.onerror = null; resolve(false); };
+      try { a.currentTime = 0; } catch (e) {}
+      a.play().catch(() => finish());
+    });
+  }
+
+  function stop() {
+    Object.keys(cache).forEach(k => { try { cache[k].pause(); } catch (e) {} });
+  }
+
+  return { load, has, play, stop, key, get ready() { return ready; } };
+})();
+
+
 const Voice = (function () {
   const synth = window.speechSynthesis;
   let voices = [];
@@ -129,14 +187,29 @@ const Voice = (function () {
 
   function stop() {
     cancelled = true;
+    Pack.stop();
     if (synth) { try { synth.cancel(); } catch (e) {} }
   }
 
+  /* ¿podemos decir ESTA frase? (con clip, o con voz inglesa del aparato) */
+  function canSay(text) { return Pack.has(text) || hasEnglish(); }
+
+  /* ¿puede hablar la app, de una forma u otra? */
+  function canSpeak() { return Pack.ready || hasEnglish(); }
+
   /* dice una frase y resuelve cuando acaba.
      Android a veces no dispara 'end', así que hay un plazo de seguridad. */
-  function say(text, opts) {
+  async function say(text, opts) {
     const o = opts || {};
     cancelled = false;
+
+    // 1) ¿hay un audio grabado para esta frase? Ése manda.
+    if (Pack.has(text)) {
+      const ok = await Pack.play(text);
+      if (ok) return;
+    }
+
+    // 2) si no, habla el móvil
     return new Promise(resolve => {
       if (!synth || !text) { setTimeout(resolve, 300); return; }
       if (!hasEnglish()) {           // sin voz inglesa preferimos el silencio
@@ -181,6 +254,7 @@ const Voice = (function () {
 
   return {
     say, playBlob, pause, stop, configure, englishVoices, hasEnglish,
+    canSay, canSpeak, pack: Pack,
     current, reload: load,
     get available() { return !!synth; },
     get cancelled() { return cancelled; }

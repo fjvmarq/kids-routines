@@ -151,8 +151,8 @@ const App = (function () {
 
     const total = list.length;
     const doneHere = list.filter(r => p.done.indexOf(r.id) !== -1).length;
-    // sin voz inglesa la app calla: hay que decírselo a los padres
-    if (!Voice.hasEnglish()) {
+    // si no hay ni audios grabados ni voz inglesa, la app calla: hay que decirlo
+    if (!Voice.canSpeak()) {
       $('#homeFoot').innerHTML = '<span class="warn-line">⚠️ Sin voz inglesa instalada: ' +
         'las chicas no hablan. Ajustes de Android › Idiomas › Texto a voz › instalar inglés.</span>';
       return;
@@ -250,7 +250,9 @@ const App = (function () {
       if (my !== token) return;
     } else {
       $('#callStage').style.display = '';
-      if (!(await speak(name ? 'Hello, ' + name + '! It\'s me, ' + c.name + '!' : c.hello))) return;
+      // con el nombre si podemos decirlo; si sólo hay audios grabados, el saludo de ella
+      const saludo = name ? 'Hello, ' + name + '! It\'s me, ' + c.name + '!' : c.hello;
+      if (!(await speak(Voice.canSay(saludo) ? saludo : c.hello))) return;
       await Voice.pause(200);
 
       if (voiceBlob) {
@@ -495,6 +497,9 @@ const App = (function () {
     bind();
     renderHome();
     show('screen-home');
+
+    // los audios grabados, si los hay, mandan sobre la voz del móvil
+    Voice.pack.load().then(ok => { if (ok) renderHome(); });
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
