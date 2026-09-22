@@ -270,14 +270,16 @@ const App = (function () {
     // «Say it with me» — la parte que enseña inglés
     if (r.word) {
       await Voice.pause(250);
-      if (!(await speak('Say it with me. ' + r.word + '!',
-        '<em>' + esc(r.word) + '</em>'))) return;
+      // en dos trozos a propósito: así cada uno tiene su audio grabado
+      if (!(await speak('Say it with me.', '<em>' + esc(r.word) + '</em>'))) return;
+      if (!(await speak(r.word + '!', '<em>' + esc(r.word) + '</em>'))) return;
       $('#turnBox').hidden = false;
       await Voice.pause(2600);
       $('#turnBox').hidden = true;
       if (my !== token) return;
       Sound.pop();
-      if (!(await speak(r.word + '! ' + praise(), '<em>' + esc(r.word) + '</em> ⭐'))) return;
+      if (!(await speak(r.word + '!', '<em>' + esc(r.word) + '</em> ⭐'))) return;
+      if (!(await speak(praise(), '<em>' + esc(r.word) + '</em> ⭐'))) return;
     }
 
     if (my !== token) return;
@@ -369,7 +371,9 @@ const App = (function () {
     }
     if (my !== token) return;
     $('#actText').textContent = 'Finished!';
-    await Voice.say('Finished! ' + praise());
+    await Voice.say('Finished!');
+    if (my !== token) return;
+    await Voice.say(praise());
     if (my !== token) return;
     finishActivity();
   }
@@ -425,6 +429,43 @@ const App = (function () {
       await Voice.say('Wow! You finished all your ' + PERIOD_LABEL[r.period].toLowerCase() + ' routines!');
       Confetti.start(1800);
     }
+  }
+
+
+  /* ───────── comprobar los audios ─────────
+     Construye TODAS las frases que la app puede decir y mira cuáles no tienen
+     clip grabado. Existe porque una frase sin clip no falla: simplemente se oye
+     con la voz del móvil, o no se oye nada. Eso no se ve mirando el código. */
+  function auditVoice() {
+    const lineas = [];
+    const add = t => { if (t && lineas.indexOf(t) === -1) lineas.push(t); };
+
+    Characters.LIST.forEach(c => add(c.hello));
+
+    const rutinas = Store.getRoutines();
+    rutinas.forEach(r => {
+      add(r.phrase);
+      add(r.done);
+      if (r.word) add(r.word + '!');
+      (r.steps || []).forEach(st => add(st.text));
+      if (r.count > 0) {
+        add("Let's count to " + r.count + '!');
+        for (let i = 1; i <= r.count; i++) add(String(i));
+      }
+    });
+
+    add('Say it with me.');
+    add("Let's go!");
+    add('Off you go!');
+    add('Finished!');
+    PRAISE.forEach(add);
+    add('You have one star today!');
+    for (let n = 2; n <= rutinas.length; n++) add('You have ' + n + ' stars today!');
+    ['morning', 'afternoon', 'evening'].forEach(per =>
+      add('Wow! You finished all your ' + PERIOD_LABEL[per].toLowerCase() + ' routines!'));
+
+    const faltan = lineas.filter(t => !Voice.pack.has(t));
+    return { total: lineas.length, faltan: faltan, clips: lineas.length - faltan.length };
   }
 
   /* ───────── arranque ───────── */
@@ -510,5 +551,5 @@ const App = (function () {
 
   document.addEventListener('DOMContentLoaded', init);
 
-  return { goHome, renderHome, show, get period() { return period; } };
+  return { goHome, renderHome, show, auditVoice, get period() { return period; } };
 })();

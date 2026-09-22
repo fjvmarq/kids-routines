@@ -313,6 +313,21 @@ const Parents = (function () {
       Voice.say(n ? 'Hello, ' + n + '! It\'s time to wash your hands!' : "Hello! It's time to wash your hands!");
     });
 
+    $('#pCheckVoice').addEventListener('click', () => {
+      const a = App.auditVoice();
+      const help = $('#pVoiceHelp');
+      if (!Voice.pack.ready) {
+        help.textContent = 'No hay audios grabados en esta versión: habla la voz del móvil.';
+        return;
+      }
+      if (!a.faltan.length) {
+        help.textContent = 'Las ' + a.total + ' frases tienen su audio grabado. ✔';
+      } else {
+        help.textContent = a.clips + ' de ' + a.total + ' frases tienen audio. Sin audio (las dirá el móvil): ' +
+          a.faltan.slice(0, 6).join(' · ') + (a.faltan.length > 6 ? ' … y ' + (a.faltan.length - 6) + ' más' : '');
+      }
+    });
+
     $('#pAdd').addEventListener('click', () => {
       openEditor({
         id: Store.newId(), period: App.period, emoji: '⭐', enabled: true,
