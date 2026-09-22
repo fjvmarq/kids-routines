@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Shine Time</title>
+<title>Kids Routines</title>
 <meta name="theme-color" content="#120a2a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -20,20 +20,20 @@
   <header class="topbar">
     <div class="stars-badge" id="starsBadge"><span class="star">⭐</span><span id="starsCount">0</span></div>
     <h1 class="hello" id="helloLine">Hello!</h1>
+    <nav class="periods" id="periodTabs">
+      <button class="period" data-period="morning"><span>🌅</span>Morning</button>
+      <button class="period" data-period="afternoon"><span>☀️</span>Afternoon</button>
+      <button class="period" data-period="evening"><span>🌙</span>Evening</button>
+    </nav>
     <button class="gear" id="gearBtn" aria-label="Parents">
       <span class="gear-ring"></span><span class="gear-glyph">⚙️</span>
     </button>
   </header>
 
-  <nav class="periods" id="periodTabs">
-    <button class="period" data-period="morning"><span>🌅</span>Morning</button>
-    <button class="period" data-period="afternoon"><span>☀️</span>Afternoon</button>
-    <button class="period" data-period="evening"><span>🌙</span>Evening</button>
-  </nav>
-
-  <div class="band" id="bandStage"></div>
-
-  <main class="cards" id="cardGrid"></main>
+  <div class="home-main">
+    <main class="cards" id="cardGrid"></main>
+    <aside class="band" id="bandStage"></aside>
+  </div>
 
   <div class="home-foot" id="homeFoot"></div>
 </section>
@@ -44,27 +44,34 @@
 
   <!-- incoming -->
   <div class="ringing" id="ringing">
-    <div class="caller-name" id="callerName">Luna</div>
-    <div class="caller-sub">is calling you…</div>
     <div class="avatar-pulse">
       <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
       <div class="avatar" id="callerAvatar"></div>
     </div>
-    <button class="answer" id="answerBtn"><span>📞</span></button>
-    <div class="answer-hint">Tap to answer!</div>
+    <div class="ringing-side">
+      <div class="caller-name" id="callerName">Yuna</div>
+      <div class="caller-sub">is calling you…</div>
+      <button class="answer" id="answerBtn"><span>📞</span></button>
+      <div class="answer-hint">Tap to answer!</div>
+    </div>
   </div>
 
   <!-- connected -->
   <div class="incall" id="incall" hidden>
-    <div class="incall-head"><span class="live-dot"></span><span id="incallName">Luna</span></div>
-    <div class="stage" id="callStage"></div>
-    <video class="media-video" id="callVideo" playsinline hidden></video>
-    <div class="bubble" id="callBubble"></div>
-    <div class="turn" id="turnBox" hidden><div class="mic">🎤</div><div class="turn-text">Your turn!</div></div>
-    <div class="call-actions" id="callActions" hidden>
-      <button class="btn ghost" id="againBtn">🔊 Again</button>
-      <button class="btn go" id="letsGoBtn">▶ Let's do it</button>
-      <button class="btn win" id="doneBtn">⭐ I did it!</button>
+    <div class="scene" id="callScene">
+      <div class="set-layer" id="callSet"></div>
+      <div class="incall-head"><span class="live-dot"></span><span id="incallName">Yuna</span></div>
+      <div class="walker" id="callStage"></div>
+      <video class="media-video" id="callVideo" playsinline hidden></video>
+      <div class="turn" id="turnBox" hidden><div class="mic">🎤</div><div class="turn-text">Your turn!</div></div>
+    </div>
+    <div class="call-bottom">
+      <div class="bubble" id="callBubble"></div>
+      <div class="call-actions" id="callActions" hidden>
+        <button class="btn ghost" id="againBtn">🔊 Again</button>
+        <button class="btn go" id="letsGoBtn">▶ Let's do it</button>
+        <button class="btn win" id="doneBtn">⭐ I did it!</button>
+      </div>
     </div>
   </div>
 </section>
@@ -72,28 +79,35 @@
 <!-- ─────────────────────────── ACTIVITY ─────────────────────────── -->
 <section id="screen-activity" class="screen activity">
   <button class="back" id="actBack" aria-label="Back">‹</button>
-  <div class="act-emoji" id="actEmoji">🪥</div>
-  <div class="act-text" id="actText">Brush your top teeth.</div>
-  <div class="counter" id="actCounter" hidden>1</div>
-  <div class="act-dots" id="actDots"></div>
+  <div class="scene act-scene">
+    <div class="set-layer" id="actSet"></div>
+    <div class="act-left">
+      <div class="act-emoji" id="actEmoji">🪥</div>
+      <div class="act-text" id="actText">Brush your top teeth.</div>
+      <div class="counter" id="actCounter" hidden>1</div>
+      <div class="act-dots" id="actDots"></div>
+    </div>
+    <div class="walker right" id="actBand"></div>
+  </div>
   <div class="act-actions">
     <button class="btn ghost" id="actAgain">🔊 Again</button>
     <button class="btn go" id="actNext">Next ›</button>
     <button class="btn win" id="actDone" hidden>⭐ I did it!</button>
   </div>
-  <div class="act-band" id="actBand"></div>
 </section>
 
 <!-- ─────────────────────────── CELEBRATION ─────────────────────────── -->
 <section id="screen-win" class="screen win">
   <canvas id="confetti"></canvas>
-  <div class="win-inner">
-    <div class="win-band" id="winBand"></div>
+  <div class="scene win-scene">
+    <div class="walker dancing" id="winBand"></div>
     <video class="media-video" id="winVideo" playsinline hidden></video>
-    <div class="win-title" id="winTitle">Great job!</div>
-    <div class="win-sub" id="winSub">You brushed your teeth!</div>
-    <div class="win-star" id="winStar">⭐</div>
-    <button class="btn go big" id="winBack">Back</button>
+    <div class="win-text">
+      <div class="win-title" id="winTitle">Great job!</div>
+      <div class="win-sub" id="winSub">You brushed your teeth!</div>
+      <div class="win-star" id="winStar">⭐</div>
+      <button class="btn go big" id="winBack">Back</button>
+    </div>
   </div>
 </section>
 
@@ -117,6 +131,13 @@
     </div>
 
     <div class="p-card">
+      <label class="p-label">Retratos de las chicas</label>
+      <p class="p-help">Si pones una imagen, esa chica se verá así en la llamada, en la
+        actividad y en la celebración, en lugar del dibujo. Se queda en este móvil.</p>
+      <div id="pPortraits" class="p-list"></div>
+    </div>
+
+    <div class="p-card">
       <label class="p-label">Voz en inglés</label>
       <select class="p-input" id="pVoice"></select>
       <div class="p-row">
@@ -132,6 +153,7 @@
       <p class="p-help">Toca una para editar su frase, su dibujo, sus pasos, tu voz o un vídeo tuyo.</p>
       <div id="pRoutines" class="p-list"></div>
       <button class="p-btn" id="pAdd">+ Añadir rutina</button>
+      <button class="p-btn warn" id="pRestore">Restaurar el catálogo de fábrica</button>
     </div>
 
     <div class="p-card">
@@ -149,7 +171,7 @@
       </div>
     </div>
 
-    <p class="p-foot">Shine Time · hecho en casa · <span id="pVersion"></span></p>
+    <p class="p-foot">Kids Routines · hecho en casa · <span id="pVersion"></span></p>
   </div>
 </section>
 
@@ -181,6 +203,9 @@
         <option value="evening">Noche</option>
       </select>
 
+      <label class="p-label">Escenario (dónde y cómo lo hace)</label>
+      <select class="p-input" id="eScene"></select>
+
       <label class="p-label">Dibujo (emoji)</label>
       <input class="p-input" id="eEmoji" placeholder="🪥">
 
@@ -211,12 +236,19 @@
   </div>
 </div>
 
+<!-- si el móvil está de pie, se lo decimos -->
+<div class="rotate-hint" id="rotateHint">
+  <div class="rotate-icon">📱</div>
+  <p>Turn your phone sideways!</p>
+</div>
+
 <input type="file" id="importFile" accept="application/json" hidden>
 
 <script src="js/characters.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/store.js"></script>
 <script src="js/data.js"></script>
+<script src="js/scenes.js"></script>
 <script src="js/confetti.js"></script>
 <script src="js/app.js"></script>
 <script src="js/parents.js"></script>

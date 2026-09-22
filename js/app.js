@@ -1,4 +1,4 @@
-/* Shine Time — el hilo de la app: casa → llamada → actividad → celebración. */
+/* Kids Routines — el hilo de la app: casa → llamada → actividad → celebración. */
 
 const App = (function () {
   const $ = sel => document.querySelector(sel);
@@ -46,6 +46,18 @@ const App = (function () {
   }
 
   function praise() { return PRAISE[(Math.random() * PRAISE.length) | 0]; }
+
+  /* pinta un personaje dentro de un hueco: el dibujo de la casa, o el retrato
+     que los padres hayan cargado para ella (que manda, y se queda en el móvil) */
+  function paintCharacter(el, c, opts) {
+    if (!el) return Promise.resolve();
+    el.innerHTML = Characters.svg(c, opts || {});
+    return Media.get('char:' + c.id, 'image').then(blob => {
+      if (blob && el.isConnected) {
+        el.innerHTML = '<img class="portrait" alt="' + esc(c.name) + '" src="' + urlFor(blob) + '">';
+      }
+    });
+  }
 
   function childName() { return (Store.getSettings().childName || '').trim(); }
 
@@ -101,9 +113,13 @@ const App = (function () {
 
     // el grupo saludando
     const band = $('#bandStage');
-    band.innerHTML = Characters.LIST.map(c =>
-      Characters.svg(c, { pose: 'idle' }).replace('class="kchar', 'class="kchar mini-char')
-    ).join('');
+    band.innerHTML = '';
+    Characters.LIST.forEach(c => {
+      const slot = document.createElement('div');
+      slot.className = 'band-slot';
+      band.appendChild(slot);
+      paintCharacter(slot, c, { pose: 'idle' });
+    });
 
     const list = Store.getRoutines().filter(r => r.enabled !== false && r.period === period);
     const grid = $('#cardGrid');
@@ -135,6 +151,12 @@ const App = (function () {
 
     const total = list.length;
     const doneHere = list.filter(r => p.done.indexOf(r.id) !== -1).length;
+    // sin voz inglesa la app calla: hay que decírselo a los padres
+    if (!Voice.hasEnglish()) {
+      $('#homeFoot').innerHTML = '<span class="warn-line">⚠️ Sin voz inglesa instalada: ' +
+        'las chicas no hablan. Ajustes de Android › Idiomas › Texto a voz › instalar inglés.</span>';
+      return;
+    }
     $('#homeFoot').textContent = total
       ? (doneHere === total ? 'All done! ⭐ ' + PERIOD_LABEL[period] + ' complete!' : doneHere + ' of ' + total + ' done')
       : '';
@@ -157,7 +179,7 @@ const App = (function () {
     Sound.unlock();
 
     $('#callerName').textContent = caller.name;
-    $('#callerAvatar').innerHTML = Characters.svg(caller, { pose: 'idle' });
+    paintCharacter($('#callerAvatar'), caller, { pose: 'idle' });
     $('#ringing').hidden = false;
     $('#incall').hidden = true;
     $('#callActions').hidden = true;
@@ -177,13 +199,17 @@ const App = (function () {
     $('#ringing').hidden = true;
     $('#incall').hidden = false;
     $('#incallName').textContent = caller.name;
-    $('#callStage').innerHTML = Characters.svg(caller, { pose: 'idle', mic: true });
+    const scene = Scenes.forRoutine(routine);
+    $('#callSet').innerHTML = Scenes.set(scene);
+    paintCharacter($('#callStage'), caller, { pose: 'idle', mic: true });
     runCallScript();
   }
 
+  /* mientras habla mueve la boca y se queda quieta; si calla, vuelve a pasearse */
   function mouth(on) {
     const svg = $('#callStage .kchar');
     if (svg) svg.classList.toggle('speaking', !!on);
+    $('#callStage').classList.toggle('talking', !!on);
   }
 
   /* dice una frase moviendo la boca y enseñándola en el bocadillo */
@@ -191,7 +217,7 @@ const App = (function () {
     const my = token;
     $('#callBubble').innerHTML = bubbleHtml === undefined ? esc(text) : bubbleHtml;
     mouth(true);
-    await Voice.say(text);
+    await Voice.say(text, caller ? { pitch: caller.pitch, rate: caller.rate } : null);
     mouth(false);
     return my === token;
   }
@@ -267,7 +293,13 @@ const App = (function () {
     $('#actCounter').hidden = true;
     $('#actDone').hidden = true;
     $('#actNext').hidden = false;
-    $('#actBand').innerHTML = Characters.svg(caller, { pose: 'idle', mic: true });
+
+    // aquí la chica HACE la rutina: su sitio detrás, el objeto en la mano y el gesto
+    const scene = Scenes.forRoutine(routine);
+    $('#actSet').innerHTML = Scenes.set(scene);
+    paintCharacter($('#actBand'), caller,
+      { pose: 'still', prop: Scenes.prop(scene), action: Scenes.action(scene) });
+
     show('screen-activity');
     renderStep();
   }
@@ -358,7 +390,7 @@ const App = (function () {
 
     $('#winTitle').textContent = praise();
     $('#winSub').textContent = r.done || '';
-    $('#winBand').innerHTML = Characters.svg(caller, { pose: 'dance', mic: true });
+    paintCharacter($('#winBand'), caller, { pose: 'dance', mic: true });
     $('#winStar').textContent = '⭐'.repeat(Math.min(stars, 5)) || '⭐';
     stopVideos();
     show('screen-win');

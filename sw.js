@@ -1,8 +1,8 @@
-/* Shine Time — service worker.
+/* Kids Routines — service worker.
    Guarda la app entera en el móvil: después funciona sin internet, en avión o
    en el baño sin cobertura. Al cambiar de versión se borra lo viejo. */
 
-const CACHE = 'shine-time-v1';
+const CACHE = 'kids-routines-v3';
 const FILES = [
   './',
   'index.html',
@@ -11,6 +11,7 @@ const FILES = [
   'js/audio.js',
   'js/store.js',
   'js/data.js',
+  'js/scenes.js',
   'js/confetti.js',
   'js/app.js',
   'js/parents.js',

@@ -1,26 +1,32 @@
-/* Shine Time — confeti de la celebración. Un canvas y nada más. */
+/* Kids Routines — confeti de la celebración. Un canvas y nada más.
+   Se dibuja en píxeles CSS (no en los del panel), si no en una pantalla de
+   móvil el confeti sale diminuto y cayendo a cámara lenta. */
 
 const Confetti = (function () {
   const COLORS = ['#ff5fb0', '#9b5cff', '#3fe0ff', '#7dff9b', '#ffd447', '#ffffff'];
   let canvas = null, ctx = null, parts = [], raf = 0, until = 0;
+  let W = 0, H = 0;
 
   function size() {
     if (!canvas) return;
-    canvas.width = canvas.clientWidth * (window.devicePixelRatio || 1);
-    canvas.height = canvas.clientHeight * (window.devicePixelRatio || 1);
+    const dpr = window.devicePixelRatio || 1;
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   function spawn(n) {
-    const w = canvas.width, h = canvas.height;
     for (let i = 0; i < n; i++) {
       parts.push({
-        x: Math.random() * w,
-        y: -Math.random() * h * 0.4,
-        vx: (Math.random() - 0.5) * 2.4,
-        vy: 2 + Math.random() * 3.4,
-        s: 6 + Math.random() * 10,
+        x: Math.random() * W,
+        y: -20 - Math.random() * H * 0.5,
+        vx: (Math.random() - 0.5) * 2.2,
+        vy: 3 + Math.random() * 3,
+        s: 7 + Math.random() * 9,
         a: Math.random() * Math.PI,
-        va: (Math.random() - 0.5) * 0.25,
+        va: (Math.random() - 0.5) * 0.3,
         c: COLORS[(Math.random() * COLORS.length) | 0],
         star: Math.random() < 0.3
       });
@@ -28,10 +34,10 @@ const Confetti = (function () {
   }
 
   function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const h = canvas.height;
-    parts = parts.filter(p => p.y < h + 40);
+    ctx.clearRect(0, 0, W, H);
+    parts = parts.filter(p => p.y < H + 40);
     parts.forEach(p => {
+      p.vy += 0.09;                     // gravedad
       p.x += p.vx; p.y += p.vy; p.a += p.va;
       ctx.save();
       ctx.translate(p.x, p.y);
@@ -51,7 +57,7 @@ const Confetti = (function () {
       ctx.restore();
     });
 
-    if (Date.now() < until && parts.length < 240) spawn(3);
+    if (Date.now() < until && parts.length < 220) spawn(4);
     if (parts.length) raf = requestAnimationFrame(draw);
     else raf = 0;
   }
@@ -59,20 +65,20 @@ const Confetti = (function () {
   function start(ms) {
     canvas = canvas || document.getElementById('confetti');
     if (!canvas) return;
-    ctx = ctx || canvas.getContext('2d');
     size();
+    if (!W || !H) return;             // la pantalla todavía no está visible
     until = Date.now() + (ms || 2200);
-    spawn(90);
+    spawn(70);
     if (!raf) raf = requestAnimationFrame(draw);
   }
 
   function stop() {
     until = 0; parts = [];
     if (raf) { cancelAnimationFrame(raf); raf = 0; }
-    if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (ctx) ctx.clearRect(0, 0, W, H);
   }
 
-  window.addEventListener('resize', () => { if (canvas) size(); });
+  window.addEventListener('resize', () => { if (canvas && canvas.clientWidth) size(); });
 
   return { start, stop };
 })();

@@ -1,12 +1,12 @@
-/* Shine Time — guardado.
+/* Kids Routines — guardado.
    Ajustes y rutinas en localStorage; imágenes, vídeos y grabaciones en IndexedDB
    (son ficheros grandes y localStorage no los aguanta).
    Todo vive en el móvil: nada sale de él. */
 
 const Store = (function () {
-  const K_SET = 'shine.settings.v1';
-  const K_ROU = 'shine.routines.v1';
-  const K_PRO = 'shine.progress.v1';
+  const K_SET = 'kidsroutines.settings.v1';
+  const K_ROU = 'kidsroutines.routines.v1';
+  const K_PRO = 'kidsroutines.progress.v1';
 
   const DEFAULT_SETTINGS = {
     childName: '',
@@ -48,7 +48,28 @@ const Store = (function () {
     if (!Array.isArray(routines) || !routines.length) {
       routines = DEFAULT_ROUTINES.map(r => Object.assign({}, r));
       write(K_ROU, routines);
+      saveSettings({ catalogVersion: CATALOG_VERSION });
+      return routines;
     }
+    // catálogo nuevo: añadimos SÓLO las que faltan, sin tocar las suyas
+    if ((settings.catalogVersion || 0) < CATALOG_VERSION) {
+      const have = {};
+      routines.forEach(r => { have[r.id] = true; });
+      const nuevas = DEFAULT_ROUTINES.filter(r => !have[r.id]).map(r => Object.assign({}, r));
+      if (nuevas.length) {
+        routines = routines.concat(nuevas);
+        write(K_ROU, routines);
+      }
+      saveSettings({ catalogVersion: CATALOG_VERSION });
+    }
+    return routines;
+  }
+
+  /* volver al catálogo de fábrica (borra los cambios del usuario) */
+  function restoreDefaults() {
+    routines = DEFAULT_ROUTINES.map(r => Object.assign({}, r));
+    write(K_ROU, routines);
+    saveSettings({ catalogVersion: CATALOG_VERSION });
     return routines;
   }
   function saveRoutines(list) {
@@ -100,7 +121,7 @@ const Store = (function () {
 
   return {
     getSettings, saveSettings,
-    getRoutines, saveRoutines, getRoutine, upsertRoutine, deleteRoutine, newId,
+    getRoutines, saveRoutines, getRoutine, upsertRoutine, deleteRoutine, newId, restoreDefaults,
     getProgress, markDone, resetToday, today,
     DEFAULT_SETTINGS
   };
@@ -109,7 +130,7 @@ const Store = (function () {
 
 /* ───────── ficheros grandes (IndexedDB) ───────── */
 const Media = (function () {
-  const DB = 'shine-media';
+  const DB = 'kidsroutines-media';
   const STORE = 'files';
   const KINDS = ['image', 'voice', 'callVideo', 'winVideo'];
   let dbp = null;

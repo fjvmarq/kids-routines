@@ -1,4 +1,4 @@
-/* Shine Time — sonido y voz.
+/* Kids Routines — sonido y voz.
    Los sonidos se sintetizan (no hay ficheros que descargar) y la voz es la del
    propio Android, así que todo funciona sin conexión. */
 
@@ -79,7 +79,7 @@ const Voice = (function () {
   const synth = window.speechSynthesis;
   let voices = [];
   let chosenURI = null;
-  let rate = 0.88, pitch = 1.25;
+  let rate = 0.95, pitch = 1.45;
   let cancelled = false;
 
   function load() {
@@ -101,17 +101,24 @@ const Voice = (function () {
       const hit = voices.find(v => v.voiceURI === chosenURI);
       if (hit) return hit;
     }
-    // preferimos inglés británico y voz femenina si la hay
+    // preferimos inglés británico, voz femenina y de las nuevas (suenan naturales)
     const score = v => {
       let s = 0;
-      if (/en[-_]GB/i.test(v.lang)) s += 4;
-      if (/en[-_](US|AU|IE)/i.test(v.lang)) s += 2;
-      if (/female|woman|girl|salli|joanna|amy|emma|libby|sonia/i.test(v.name)) s += 3;
-      if (v.localService) s += 2;              // offline
+      const n = (v.name || '').toLowerCase();
+      if (/en[-_]GB/i.test(v.lang)) s += 5;
+      if (/en[-_](US|AU|IE|NZ)/i.test(v.lang)) s += 3;
+      if (/female|woman|girl|amy|emma|libby|sonia|hazel|zira|joanna|salli|aria|jenny/.test(n)) s += 4;
+      if (/google|natural|neural|premium|enhanced/.test(n)) s += 3;
+      if (/male|david|mark|george|ryan|guy|brian/.test(n)) s -= 4;
+      if (v.localService) s += 2;              // funciona sin conexión
       return s;
     };
-    return en.sort((a, b) => score(b) - score(a))[0] || null;
+    return en.slice().sort((a, b) => score(b) - score(a))[0] || null;
   }
+
+  /* ¿hay alguna voz inglesa en este aparato? Si no, NO hablamos: una voz
+     española leyendo inglés le enseña a pronunciar mal, que es peor que callar. */
+  function hasEnglish() { return englishVoices().length > 0; }
 
   function configure(o) {
     if (!o) return;
@@ -132,13 +139,17 @@ const Voice = (function () {
     cancelled = false;
     return new Promise(resolve => {
       if (!synth || !text) { setTimeout(resolve, 300); return; }
+      if (!hasEnglish()) {           // sin voz inglesa preferimos el silencio
+        setTimeout(resolve, Math.min(2600, 600 + text.length * 45));
+        return;
+      }
       let done = false;
       const finish = () => { if (!done) { done = true; clearTimeout(guard); resolve(); } };
 
       try { synth.cancel(); } catch (e) {}
       const u = new SpeechSynthesisUtterance(text);
       const v = current();
-      if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'en-GB'; }
+      if (v) { u.voice = v; u.lang = v.lang; }
       u.rate = o.rate || rate;
       u.pitch = o.pitch === undefined ? pitch : o.pitch;
       u.volume = 1;
@@ -169,7 +180,7 @@ const Voice = (function () {
   function pause(ms) { return new Promise(r => setTimeout(r, ms)); }
 
   return {
-    say, playBlob, pause, stop, configure, englishVoices,
+    say, playBlob, pause, stop, configure, englishVoices, hasEnglish,
     current, reload: load,
     get available() { return !!synth; },
     get cancelled() { return cancelled; }

@@ -1,4 +1,4 @@
-/* Shine Time — zona de padres (en español).
+/* Kids Routines — zona de padres (en español).
    Se abre manteniendo pulsada la rueda dentada: una niña de 5 años no llega ahí. */
 
 const Parents = (function () {
@@ -13,6 +13,7 @@ const Parents = (function () {
 
   function open() {
     fillSettings();
+    fillPortraits();
     fillVoices();
     renderRoutines();
     $('#pStarsInfo').textContent = 'Hoy: ' + Store.getProgress().done.length +
@@ -59,6 +60,42 @@ const Parents = (function () {
       help.textContent = 'Ahora mismo habla: ' + (v ? v.name + ' (' + v.lang + ')' : '—') +
         '. Las marcadas «sin conexión» funcionan sin internet.';
     }
+  }
+
+  /* ───────── retratos propios de cada chica ───────── */
+
+  function fillPortraits() {
+    const box = $('#pPortraits');
+    box.innerHTML = '';
+    Characters.LIST.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'p-item';
+      row.innerHTML =
+        '<span class="emo">🎤</span>' +
+        '<span class="txt"><b>' + c.name + '</b><small class="state">dibujo de la app</small></span>' +
+        '<label class="p-btn tiny">Poner imagen<input type="file" accept="image/*" hidden></label>' +
+        '<button class="mini" title="Quitar">✕</button>';
+
+      const input = row.querySelector('input[type=file]');
+      const state = row.querySelector('.state');
+      const key = 'char:' + c.id;
+
+      Media.get(key, 'image').then(b => { if (b) state.textContent = 'imagen propia'; });
+
+      input.addEventListener('change', async e => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        await Media.put(key, 'image', f);
+        state.textContent = 'imagen propia';
+        e.target.value = '';
+      });
+      row.querySelector('.mini').addEventListener('click', async () => {
+        await Media.del(key, 'image');
+        state.textContent = 'dibujo de la app';
+      });
+
+      box.appendChild(row);
+    });
   }
 
   /* ───────── lista de rutinas ───────── */
@@ -121,6 +158,10 @@ const Parents = (function () {
     $('#eWord').value = r.word || '';
     $('#eDone').value = r.done || '';
     $('#ePeriod').value = r.period || 'morning';
+    const sceneSel = $('#eScene');
+    sceneSel.innerHTML = '<option value="">Automático (' + Scenes.forRoutine(r) + ')</option>' +
+      Scenes.list().map(id => '<option value="' + id + '">' + id + '</option>').join('');
+    sceneSel.value = r.scene || '';
     $('#eEmoji').value = r.emoji || '';
     $('#eSteps').value = (r.steps || []).map(s => s.text).join('\n');
     $('#eCount').value = r.count || 0;
@@ -157,6 +198,7 @@ const Parents = (function () {
       word: $('#eWord').value.trim(),
       done: $('#eDone').value.trim(),
       period: $('#ePeriod').value,
+      scene: $('#eScene').value || undefined,
       emoji: $('#eEmoji').value.trim() || '⭐',
       steps: steps,
       count: Math.max(0, Math.min(60, parseInt($('#eCount').value, 10) || 0))
@@ -213,13 +255,13 @@ const Parents = (function () {
 
   function exportAll() {
     const data = {
-      app: 'shine-time', version: VERSION, date: new Date().toISOString(),
+      app: 'kids-routines', version: VERSION, date: new Date().toISOString(),
       settings: Store.getSettings(), routines: Store.getRoutines()
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'shine-time-' + Store.today() + '.json';
+    a.download = 'kids-routines-' + Store.today() + '.json';
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   }
@@ -276,6 +318,12 @@ const Parents = (function () {
         id: Store.newId(), period: App.period, emoji: '⭐', enabled: true,
         name: '', phrase: '', word: '', done: '', steps: [], count: 0
       });
+    });
+
+    $('#pRestore').addEventListener('click', () => {
+      if (!confirm('Esto devuelve las rutinas de fábrica y borra tus cambios en ellas. ¿Seguimos?')) return;
+      Store.restoreDefaults();
+      renderRoutines();
     });
 
     $('#pResetDay').addEventListener('click', () => {
