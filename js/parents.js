@@ -36,8 +36,9 @@ const Parents = (function () {
       Characters.LIST.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
     sel.value = s.character || 'random';
 
-    $('#pRate').value = s.rate || 0.88;
-    $('#pPitch').value = s.pitch || 1.25;
+    $('#pSource').value = s.voiceSource || 'pack';
+    $('#pRate').value = s.rate || 0.95;
+    $('#pPitch').value = s.pitch || 1.45;
   }
 
   function fillVoices() {
@@ -296,6 +297,11 @@ const Parents = (function () {
       $('#pNameEcho').textContent = e.target.value || 'Superstar';
     });
     $('#pChar').addEventListener('change', e => Store.saveSettings({ character: e.target.value }));
+    $('#pSource').addEventListener('change', e => {
+      Store.saveSettings({ voiceSource: e.target.value });
+      Voice.configure({ source: e.target.value });
+      fillVoices();
+    });
     $('#pVoice').addEventListener('change', e => {
       Store.saveSettings({ voiceURI: e.target.value });
       Voice.configure({ voiceURI: e.target.value });

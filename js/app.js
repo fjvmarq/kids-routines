@@ -529,12 +529,25 @@ const App = (function () {
       if (document.hidden) { token++; Voice.stop(); Sound.stopRing(); }
     });
 
-    document.addEventListener('pointerdown', () => Sound.unlock(), { once: true });
+    document.addEventListener('pointerdown', () => {
+      Sound.unlock();
+      pideHorizontal();
+    }, { once: true });
+  }
+
+
+  /* pide horizontal al móvil. Es una petición, no una orden: si la rechaza,
+     queda el aviso de «gira el móvil» y la app funciona igual. */
+  function pideHorizontal() {
+    try {
+      const o = screen.orientation;
+      if (o && o.lock) o.lock('landscape').catch(() => {});
+    } catch (e) { /* móvil que no lo permite */ }
   }
 
   function init() {
     const s = Store.getSettings();
-    Voice.configure({ voiceURI: s.voiceURI, rate: s.rate, pitch: s.pitch });
+    Voice.configure({ voiceURI: s.voiceURI, rate: s.rate, pitch: s.pitch, source: s.voiceSource });
     bind();
     renderHome();
     show('screen-home');

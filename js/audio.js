@@ -111,22 +111,36 @@ const Pack = (function () {
 
   function has(text) { return ready && !!files[key(text)]; }
 
+  /* Suena UNO cada vez. Antes no se paraba el anterior y se solapaban: se oían
+     dos voces a la vez y el audio iba desfasado del texto de la pantalla. */
+  let sonando = null;
+
   function play(text) {
     return new Promise(resolve => {
       const k = key(text);
       if (!ready || !files[k]) { resolve(false); return; }
+      stop();                                  // lo primero: callar lo anterior
       let a = cache[k];
       if (!a) { a = new Audio(base + files[k]); a.preload = 'auto'; cache[k] = a; }
-      const finish = () => { a.onended = a.onerror = null; resolve(true); };
-      a.onended = finish;
-      a.onerror = () => { a.onended = a.onerror = null; resolve(false); };
+      sonando = a;
+      const finish = ok => {
+        a.onended = a.onerror = null;
+        if (sonando === a) sonando = null;
+        resolve(ok);
+      };
+      a.onended = () => finish(true);
+      a.onerror = () => finish(false);
       try { a.currentTime = 0; } catch (e) {}
-      a.play().catch(() => finish());
+      a.play().catch(() => finish(false));
     });
   }
 
   function stop() {
-    Object.keys(cache).forEach(k => { try { cache[k].pause(); } catch (e) {} });
+    if (!sonando) return;
+    const a = sonando;
+    sonando = null;
+    a.onended = a.onerror = null;
+    try { a.pause(); a.currentTime = 0; } catch (e) {}
   }
 
   return { load, has, play, stop, key, get ready() { return ready; } };
@@ -139,6 +153,10 @@ const Voice = (function () {
   let chosenURI = null;
   let rate = 0.95, pitch = 1.45;
   let cancelled = false;
+  /* 'auto'   = el clip si existe, y si no la voz del móvil
+     'pack'   = SÓLO los audios de la app (nunca se mezclan voces)
+     'device' = SÓLO la voz del móvil */
+  let source = 'pack';
 
   function load() {
     if (!synth) return;
@@ -183,6 +201,7 @@ const Voice = (function () {
     if (o.voiceURI !== undefined) chosenURI = o.voiceURI || null;
     if (o.rate) rate = +o.rate;
     if (o.pitch) pitch = +o.pitch;
+    if (o.source) source = o.source;
   }
 
   function stop() {
@@ -191,11 +210,20 @@ const Voice = (function () {
     if (synth) { try { synth.cancel(); } catch (e) {} }
   }
 
-  /* ¿podemos decir ESTA frase? (con clip, o con voz inglesa del aparato) */
-  function canSay(text) { return Pack.has(text) || hasEnglish(); }
+  /* ¿podemos decir ESTA frase tal cual, sin cambiar de voz por el camino? */
+  function canSay(text) {
+    if (source === 'device') return hasEnglish();
+    if (Pack.ready) return Pack.has(text) || (source === 'auto' && hasEnglish());
+    return hasEnglish();
+  }
 
   /* ¿puede hablar la app, de una forma u otra? */
-  function canSpeak() { return Pack.ready || hasEnglish(); }
+  function canSpeak() {
+    if (source === 'device') return hasEnglish();
+    return Pack.ready || hasEnglish();
+  }
+
+  function getSource() { return source; }
 
   /* dice una frase y resuelve cuando acaba.
      Android a veces no dispara 'end', así que hay un plazo de seguridad. */
@@ -203,13 +231,19 @@ const Voice = (function () {
     const o = opts || {};
     cancelled = false;
 
-    // 1) ¿hay un audio grabado para esta frase? Ése manda.
-    if (Pack.has(text)) {
+    // callar lo anterior SIEMPRE: si no, se solapan y suenan dos a la vez
+    Pack.stop();
+    if (synth) { try { synth.cancel(); } catch (e) {} }
+
+    // 1) el audio grabado manda (salvo que en casa prefieran la voz del móvil)
+    if (source !== 'device' && Pack.has(text)) {
       const ok = await Pack.play(text);
       if (ok) return;
     }
 
-    // 2) si no, habla el móvil
+    // 2) si no hay clip, habla el móvil — salvo que hayan pedido sólo los audios
+    if (source === 'pack' && Pack.ready) return;
+
     return new Promise(resolve => {
       if (!synth || !text) { setTimeout(resolve, 300); return; }
       if (!hasEnglish()) {           // sin voz inglesa preferimos el silencio
@@ -254,7 +288,7 @@ const Voice = (function () {
 
   return {
     say, playBlob, pause, stop, configure, englishVoices, hasEnglish,
-    canSay, canSpeak, pack: Pack,
+    canSay, canSpeak, getSource, pack: Pack,
     current, reload: load,
     get available() { return !!synth; },
     get cancelled() { return cancelled; }

@@ -138,7 +138,14 @@
     </div>
 
     <div class="p-card">
-      <label class="p-label">Voz en inglés</label>
+      <label class="p-label">¿De dónde sale la voz?</label>
+      <select class="p-input" id="pSource">
+        <option value="pack">Los audios de la app (siempre la misma voz)</option>
+        <option value="device">La voz del móvil</option>
+        <option value="auto">Los audios, y el móvil para lo que falte</option>
+      </select>
+
+      <label class="p-label">Voz del móvil (si se usa)</label>
       <select class="p-input" id="pVoice"></select>
       <div class="p-row">
         <div class="p-slider"><span>Velocidad</span><input type="range" id="pRate" min="0.6" max="1.2" step="0.05"></div>

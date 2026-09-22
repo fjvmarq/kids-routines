@@ -1,21 +1,16 @@
 {
-  "id": "/kids-routines/",
   "name": "Kids Routines",
-  "short_name": "Routines",
+  "short_name": "Kids Routines",
   "description": "Daily routines in English for little ones, with a hand-drawn K-pop band.",
   "start_url": "/kids-routines/",
   "scope": "/kids-routines/",
   "display": "standalone",
-  "display_override": ["fullscreen", "standalone", "minimal-ui"],
-  "orientation": "landscape",
   "background_color": "#120a2a",
   "theme_color": "#120a2a",
   "lang": "en",
-  "dir": "ltr",
-  "categories": ["education", "kids"],
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
     { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

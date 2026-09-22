@@ -12,8 +12,9 @@ const Store = (function () {
     childName: '',
     character: 'random',      // 'random' | id de personaje
     voiceURI: '',
-    rate: 0.88,
-    pitch: 1.25
+    rate: 0.95,
+    pitch: 1.45,
+    voiceSource: 'pack'      // 'pack' | 'device' | 'auto'  (ver js/audio.js)
   };
 
   function read(key, fallback) {

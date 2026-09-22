@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kids Routines — estado</title>
+<style>
+  body{margin:0; padding:16px; background:#140c28; color:#fff;
+       font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+  h1{font-size:19px; margin:0 0 4px}
+  p.sub{color:#b9a8e0; margin:0 0 16px; font-size:13px}
+  .l{display:flex; gap:10px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.12);
+     align-items:flex-start}
+  .k{flex:none; width:150px; color:#b9a8e0; font-size:13px}
+  .v{flex:1; word-break:break-word}
+  .ok{color:#7dff9b} .mal{color:#ff8199} .avi{color:#ffd447}
+  button{margin-top:18px; width:100%; padding:14px; border:0; border-radius:12px;
+         background:#ff4fa3; color:#fff; font-size:16px; font-weight:700}
+  a{color:#3fe0ff}
+</style>
+</head>
+<body>
+<h1>Kids Routines — estado</h1>
+<p class="sub">Esta página no es la app: sólo comprueba que todo lo que la app necesita está bien
+en este móvil. Hazle una captura y mándala.</p>
+<div id="out">Comprobando…</div>
+<button onclick="location.href='./'">Abrir la app</button>
+
+<script>
+const BASE = location.href.replace(/estado\.html.*$/, '');
+const filas = [];
+function fila(k, v, estado) {
+  filas.push('<div class="l"><div class="k">' + k + '</div><div class="v ' +
+    (estado || '') + '">' + v + '</div></div>');
+  document.getElementById('out').innerHTML = filas.join('');
+}
+
+(async function () {
+  fila('Dirección', location.href);
+  fila('Modo', matchMedia('(display-mode: standalone)').matches
+    ? 'instalada (standalone)' : (matchMedia('(display-mode: fullscreen)').matches
+      ? 'instalada (fullscreen)' : 'en el navegador'), 'ok');
+  fila('Pantalla', innerWidth + ' × ' + innerHeight +
+    (innerWidth > innerHeight ? ' (horizontal)' : ' (vertical — gírala)'),
+    innerWidth > innerHeight ? 'ok' : 'avi');
+
+  try {
+    const r = await fetch(BASE + 'manifest.webmanifest', { cache: 'no-cache' });
+    const m = await r.json();
+    fila('Manifiesto', 'HTTP ' + r.status + ' · ' + m.name + ' · ' + m.display, r.ok ? 'ok' : 'mal');
+    fila('start_url', m.start_url + ' → ' + new URL(m.start_url, location.href).href);
+  } catch (e) {
+    fila('Manifiesto', 'FALLA: ' + e.message, 'mal');
+  }
+
+  if ('serviceWorker' in navigator) {
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      fila('Service worker', regs.length
+        ? regs.length + ' registrado(s) · ámbito ' + regs[0].scope
+        : 'ninguno todavía', regs.length ? 'ok' : 'avi');
+    } catch (e) { fila('Service worker', 'FALLA: ' + e.message, 'mal'); }
+  } else {
+    fila('Service worker', 'este navegador no lo soporta', 'mal');
+  }
+
+  try {
+    const keys = await caches.keys();
+    let n = 0;
+    for (const k of keys) n += (await (await caches.open(k)).keys()).length;
+    fila('Guardado sin conexión', keys.length
+      ? keys.join(', ') + ' · ' + n + ' ficheros' : 'nada guardado aún',
+      keys.length ? 'ok' : 'avi');
+  } catch (e) { fila('Guardado sin conexión', 'FALLA: ' + e.message, 'mal'); }
+
+  try {
+    const r = await fetch(BASE + 'audio/manifest.json', { cache: 'no-cache' });
+    const m = await r.json();
+    const clips = Object.keys(m.files || {}).length;
+    const a = new Audio(BASE + 'audio/' + m.files['great-job']);
+    await new Promise(res => { a.onloadedmetadata = res; a.onerror = res; setTimeout(res, 4000); });
+    fila('Audios en inglés', clips + ' clips · voz ' + m.voice +
+      ' · prueba: ' + (a.duration ? a.duration.toFixed(1) + ' s' : 'no cargó'),
+      clips && a.duration ? 'ok' : 'avi');
+  } catch (e) { fila('Audios en inglés', 'FALLA: ' + e.message, 'mal'); }
+
+  const voces = (speechSynthesis.getVoices() || []).filter(v => /^en/i.test(v.lang));
+  setTimeout(() => {
+    const v2 = (speechSynthesis.getVoices() || []).filter(v => /^en/i.test(v.lang));
+    fila('Voces inglesas del móvil', v2.length
+      ? v2.slice(0, 4).map(v => v.name + ' (' + v.lang + ')').join(' · ')
+      : 'ninguna instalada (no pasa nada: la app trae sus audios)',
+      v2.length ? 'ok' : 'avi');
+    fila('Navegador', navigator.userAgent);
+  }, 800);
+  void voces;
+})();
+
+window.addEventListener('error', e => fila('ERROR DE JAVASCRIPT',
+  e.message + ' — ' + (e.filename || '') + ':' + (e.lineno || ''), 'mal'));
+</script>
+</body>
+</html>
