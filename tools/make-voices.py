@@ -1,36 +1,54 @@
-"""Genera los audios en inglés de la app (el «pack de voz»).
+"""Genera los audios en inglés de la app: UNA VOZ POR CHICA.
 
-    python tools/make-voices.py --list          ve qué frases hacen falta
-    python tools/make-voices.py --voices        ve qué voces inglesas hay
-    python tools/make-voices.py                 genera audio/*.wav + manifest.json
-    python tools/make-voices.py --voice "Microsoft Zira Desktop"
+    <python del entorno de motores> tools/make-voices.py            todas
+    <python del entorno de motores> tools/make-voices.py --solo yuna
+    python tools/make-voices.py --list                              ver las frases
 
 Por qué existe: la voz del móvil cambia de un teléfono a otro y puede sonar mal
 (o hablar inglés con acento español si no hay voz inglesa instalada). Con este
-pack, la niña oye SIEMPRE la misma voz inglesa. La app usa el clip si existe y,
-si falta, recurre a la voz del aparato — así que generar el pack nunca rompe
-nada, sólo mejora lo que se oye.
+pack la niña oye SIEMPRE la misma voz, y además cada chica tiene la suya, que es
+lo que las hace distintas al llamar.
 
-Ahora mismo sintetiza con las voces de Windows (SAPI). Cuando tengamos una voz
-mejor, se vuelve a ejecutar con --voice y se regeneran todos los ficheros: la
-app no cambia.
+Las voces, y por qué se pueden publicar:
+  · Kokoro-82M → pesos Apache-2.0, que no ponen ninguna condición sobre el audio
+    generado. Emma (bf_emma) y Lily (bf_lily) son británicas.
+  · Piper cori → entrenada DESDE CERO con grabaciones de dominio público
+    (LibriVox). Se evitan a propósito jenny/amy/alba/hfc_female: derivan de la
+    voz lessac (Blizzard 2013), permitida sólo para investigación.
+
+El tono: ninguna voz libre es infantil, todas son de mujer adulta. Se generan
+más lentas y se les sube el tono remuestreando la onda, así suenan más jóvenes
+y la duración queda igual (ni acelerada ni pastosa).
 
 Las claves de los ficheros las decide slug(), que es la MISMA regla que
 Pack.key() en js/audio.js. Si cambias una, cambia la otra.
+
+Hace falta el entorno con los motores instalados:
+    C:\\Users\\fjavi\\AppData\\Local\\Temp\\ttslab\\v\\Scripts\\python.exe
 """
 
 import argparse
 import json
 import os
 import re
-import subprocess
 import sys
+import wave
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 AUDIO = os.path.join(ROOT, "audio")
+LAB = r"C:\Users\fjavi\AppData\Local\Temp\ttslab"
 
-# ── frases fijas de la app (tienen que coincidir LETRA A LETRA con lo que dice
-#    js/app.js, porque la clave se calcula del texto)
+# ── una voz por chica ────────────────────────────────────────────────────────
+VOCES = [
+    {"id": "yuna",  "motor": "kokoro", "voz": "bf_emma", "lang": "en-gb",
+     "tono": 1.14, "nombre": "Emma (británica)"},
+    {"id": "nari",  "motor": "kokoro", "voz": "bf_lily", "lang": "en-gb",
+     "tono": 1.16, "nombre": "Lily (británica)"},
+    {"id": "soomi", "motor": "piper",  "voz": "cori.onnx",
+     "tono": 1.16, "nombre": "Cori (británica)"},
+]
+
+# ── frases fijas de la app: tienen que coincidir LETRA A LETRA con js/app.js ──
 FIXED = [
     "Say it with me.",
     "Let's go!",
@@ -49,13 +67,12 @@ FIXED += [str(n) for n in range(1, 41)]          # la cuenta en voz alta
 def slug(text):
     """La misma regla que Pack.key() en js/audio.js."""
     t = text.lower()
-    t = re.sub(r"[‘’']", "", t)
+    t = re.sub(r"[\u2018\u2019']", "", t)
     t = re.sub(r"[^a-z0-9]+", "-", t)
     return t.strip("-")[:70]
 
 
 def js_strings(path, field):
-    """Saca los valores de un campo de un fichero .js, con comillas simples o dobles."""
     src = open(path, encoding="utf-8").read()
     out = []
     for m in re.finditer(field + r"\s*:\s*(['\"])(.*?)(?<!\\)\1", src, re.S):
@@ -68,153 +85,134 @@ def collect():
     data = os.path.join(ROOT, "js", "data.js")
     chars = os.path.join(ROOT, "js", "characters.js")
 
-    phrases = []
-    phrases += js_strings(data, "phrase")
-    phrases += js_strings(data, "done")
-    phrases += js_strings(data, "text")          # los pasos
-    phrases += js_strings(chars, "hello")
+    frases = []
+    frases += js_strings(data, "phrase")
+    frases += js_strings(data, "done")
+    frases += js_strings(data, "text")          # los pasos
+    frases += js_strings(chars, "hello")
+    frases += [w + "!" for w in js_strings(data, "word")]
 
-    words = js_strings(data, "word")
-    phrases += [w + "!" for w in words]          # la palabra suelta, al repetir
-
-    # los piropos, que están en una lista suelta
     src = open(data, encoding="utf-8").read()
     m = re.search(r"const PRAISE = \[(.*?)\]", src, re.S)
     if m:
-        phrases += re.findall(r"(['\"])(.*?)(?<!\\)\1", m.group(1)) and \
-            [g[1].replace("\\'", "'") for g in re.findall(r"(['\"])(.*?)(?<!\\)\1", m.group(1))]
+        frases += [g[1].replace("\\'", "'") for g in re.findall(r"(['\"])(.*?)(?<!\\)\1", m.group(1))]
 
-    phrases += FIXED
+    frases += FIXED
 
-    seen, uniq = set(), []
-    for p in phrases:
-        p = p.strip()
-        k = slug(p)
-        if not p or not k or k in seen:
+    vistas, uniq = set(), []
+    for f in frases:
+        f = f.strip()
+        k = slug(f)
+        if not f or not k or k in vistas:
             continue
-        seen.add(k)
-        uniq.append(p)
+        vistas.add(k)
+        uniq.append(f)
     return uniq
 
 
-# ── síntesis con las voces de Windows ────────────────────────────────────────
-
-PS_LIST = r"""
-Add-Type -AssemblyName System.Speech
-(New-Object System.Speech.Synthesis.SpeechSynthesizer).GetInstalledVoices() |
-  ForEach-Object { '{0}|{1}|{2}' -f $_.VoiceInfo.Name, $_.VoiceInfo.Culture, $_.VoiceInfo.Gender }
-"""
-
-
-def list_voices():
-    out = subprocess.run(["powershell", "-NoProfile", "-Command", PS_LIST],
-                         capture_output=True, text=True)
-    voces = []
-    for line in out.stdout.splitlines():
-        parts = line.strip().split("|")
-        if len(parts) == 3:
-            voces.append({"name": parts[0], "culture": parts[1], "gender": parts[2]})
-    return voces
+def sube_el_tono(audio, factor):
+    """Remuestrea: sube el tono y acorta igual. Como se generó más lento en la
+    misma proporción, la duración final es la de siempre."""
+    import numpy as np
+    if factor == 1.0:
+        return audio
+    n = int(len(audio) / factor)
+    viejo = np.arange(len(audio))
+    nuevo = np.linspace(0, len(audio) - 1, n)
+    return np.interp(nuevo, viejo, audio).astype("float32")
 
 
-def pick_voice(voces, preferida=None):
-    if preferida:
-        for v in voces:
-            if v["name"].lower() == preferida.lower():
-                return v
-        sys.exit("No encuentro la voz %r. Las que hay:\n  %s" %
-                 (preferida, "\n  ".join(v["name"] for v in voces)))
-    ingles = [v for v in voces if v["culture"].lower().startswith("en")]
-    if not ingles:
-        sys.exit(
-            "No hay ninguna voz INGLESA instalada en Windows.\n"
-            "Instálala en: Configuración > Hora e idioma > Voz > Agregar voces > English.\n"
-            "Sin voz inglesa no se puede generar el pack (y una voz española leyendo\n"
-            "inglés es justo lo que queremos evitar)."
-        )
-    mujeres = [v for v in ingles if v["gender"].lower() == "female"]
-    return (mujeres or ingles)[0]
+def genera_kokoro(cfg, frases, destino):
+    import numpy as np
+    import soundfile as sf
+    from kokoro_onnx import Kokoro
+    k = Kokoro(os.path.join(LAB, "kokoro-v1.0.onnx"), os.path.join(LAB, "voices-v1.0.bin"))
+    hechos = 0
+    for i, texto in enumerate(frases, 1):
+        audio, sr = k.create(texto, voice=cfg["voz"], speed=0.95 / cfg["tono"], lang=cfg["lang"])
+        audio = sube_el_tono(np.asarray(audio, dtype="float32"), cfg["tono"])
+        sf.write(os.path.join(destino, slug(texto) + ".mp3"), audio, sr, format="MP3")
+        hechos += 1
+        if i % 40 == 0:
+            print("    %d/%d" % (i, len(frases)), flush=True)
+    return hechos
 
 
-PS_SPEAK = r"""
-Add-Type -AssemblyName System.Speech
-$jobs = Get-Content -Raw -Encoding UTF8 '{jobs}' | ConvertFrom-Json
-$s = New-Object System.Speech.Synthesis.SpeechSynthesizer
-$s.SelectVoice('{voice}')
-$s.Rate = {rate}
-$fmt = New-Object System.Speech.AudioFormat.SpeechAudioFormatInfo(16000, 'Sixteen', 'Mono')
-foreach ($j in $jobs) {{
-  $s.SetOutputToWaveFile($j.file, $fmt)
-  $s.Speak($j.text)
-}}
-$s.SetOutputToNull()
-$s.Dispose()
-"""
-
-
-def synth(frases, voz, rate, out_dir):
-    os.makedirs(out_dir, exist_ok=True)
-    jobs = [{"text": t, "file": os.path.join(out_dir, slug(t) + ".wav")} for t in frases]
-    jobs_path = os.path.join(out_dir, "_jobs.json")
-    with open(jobs_path, "w", encoding="utf-8") as f:
-        json.dump(jobs, f, ensure_ascii=False)
-
-    script = PS_SPEAK.format(jobs=jobs_path.replace("'", "''"), voice=voz["name"], rate=rate)
-    res = subprocess.run(["powershell", "-NoProfile", "-Command", script],
-                         capture_output=True, text=True)
-    os.remove(jobs_path)
-    if res.returncode != 0:
-        sys.exit("PowerShell falló:\n" + (res.stderr or res.stdout))
-    return jobs
+def genera_piper(cfg, frases, destino):
+    import io
+    import soundfile as sf
+    from piper import PiperVoice
+    voz = PiperVoice.load(os.path.join(LAB, cfg["voz"]))
+    hechos = 0
+    for i, texto in enumerate(frases, 1):
+        buf = io.BytesIO()
+        with wave.open(buf, "wb") as w:
+            voz.synthesize_wav(texto, w)
+        buf.seek(0)
+        audio, sr = sf.read(buf, dtype="float32")
+        audio = sube_el_tono(audio, cfg["tono"])
+        sf.write(os.path.join(destino, slug(texto) + ".mp3"), audio, sr, format="MP3")
+        hechos += 1
+        if i % 40 == 0:
+            print("    %d/%d" % (i, len(frases)), flush=True)
+    return hechos
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--list", action="store_true", help="sólo enseña las frases")
-    ap.add_argument("--voices", action="store_true", help="sólo enseña las voces instaladas")
-    ap.add_argument("--voice", help="nombre exacto de la voz a usar")
-    ap.add_argument("--rate", type=int, default=0, help="velocidad SAPI, de -10 a 10")
+    ap.add_argument("--solo", help="generar sólo la voz de esta chica (yuna/nari/soomi)")
     args = ap.parse_args()
-
-    if args.voices:
-        for v in list_voices():
-            print("%-34s %-8s %s" % (v["name"], v["culture"], v["gender"]))
-        return
 
     frases = collect()
     if args.list:
         for f in frases:
-            print("%-70s  %s.wav" % (f, slug(f)))
+            print("%-70s  %s.mp3" % (f, slug(f)))
         print("\n%d frases" % len(frases))
         return
 
-    voz = pick_voice(list_voices(), args.voice)
-    print("Voz: %s (%s, %s)" % (voz["name"], voz["culture"], voz["gender"]))
-    print("Frases: %d" % len(frases))
+    quiere = [v for v in VOCES if not args.solo or v["id"] == args.solo]
+    if not quiere:
+        sys.exit("No conozco la voz %r" % args.solo)
 
-    jobs = synth(frases, voz, args.rate, AUDIO)
+    os.makedirs(AUDIO, exist_ok=True)
+    print("%d frases × %d voces\n" % (len(frases), len(quiere)))
 
-    files, faltan, total = {}, 0, 0
-    for j, texto in zip(jobs, frases):
-        if os.path.exists(j["file"]) and os.path.getsize(j["file"]) > 1000:
-            files[slug(texto)] = os.path.basename(j["file"])
-            total += os.path.getsize(j["file"])
+    manifest_path = os.path.join(AUDIO, "manifest.json")
+    manifest = {"base": "audio/", "files": {}, "voices": {}}
+    if os.path.exists(manifest_path):
+        try:
+            with open(manifest_path, encoding="utf-8") as f:
+                viejo = json.load(f)
+            if "voices" in viejo:
+                manifest["voices"] = viejo["voices"]
+        except Exception:
+            pass
+
+    for cfg in quiere:
+        destino = os.path.join(AUDIO, cfg["id"])
+        os.makedirs(destino, exist_ok=True)
+        print("%s — %s" % (cfg["id"], cfg["nombre"]), flush=True)
+        if cfg["motor"] == "kokoro":
+            genera_kokoro(cfg, frases, destino)
         else:
-            faltan += 1
+            genera_piper(cfg, frases, destino)
+        manifest["voices"][cfg["id"]] = {
+            "dir": cfg["id"] + "/", "voice": cfg["nombre"], "engine": cfg["motor"],
+        }
+        print("  hecho\n", flush=True)
 
-    manifest = {
-        "base": "audio/",
-        "voice": voz["name"],
-        "culture": voz["culture"],
-        "files": files,
-    }
-    with open(os.path.join(AUDIO, "manifest.json"), "w", encoding="utf-8") as f:
+    manifest["files"] = {slug(f): slug(f) + ".mp3" for f in frases}
+    manifest["default"] = "yuna"
+    with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, ensure_ascii=False, indent=1)
 
-    print("Escritos %d clips (%.1f MB) en audio/" % (len(files), total / 1e6))
-    if faltan:
-        print("⚠️  %d frases no se generaron" % faltan)
-    print("La app los usará sola: si falta un clip, habla la voz del móvil.")
+    total = 0
+    for cfg in VOCES:
+        d = os.path.join(AUDIO, cfg["id"])
+        if os.path.isdir(d):
+            total += sum(os.path.getsize(os.path.join(d, x)) for x in os.listdir(d))
+    print("Listo: %d frases por voz · %.1f MB en total" % (len(frases), total / 1e6))
 
 
 if __name__ == "__main__":

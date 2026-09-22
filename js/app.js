@@ -176,7 +176,14 @@ const App = (function () {
     const my = token;
     routine = r;
     caller = pickCaller();
+    Voice.pack.setCharacter(caller.id);      // cada chica, con su voz
     Sound.unlock();
+
+    // dejamos los audios de esta llamada preparados, para que no haya esperas
+    Voice.pack.warm([
+      caller.hello, r.phrase, 'Say it with me.', (r.word || '') + '!',
+      "Let's go!", r.done
+    ].concat((r.steps || []).map(st => st.text)), caller.id);
 
     $('#callerName').textContent = caller.name;
     paintCharacter($('#callerAvatar'), caller, { pose: 'idle' });

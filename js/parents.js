@@ -73,7 +73,10 @@ const Parents = (function () {
       row.className = 'p-item';
       row.innerHTML =
         '<span class="emo">🎤</span>' +
-        '<span class="txt"><b>' + c.name + '</b><small class="state">dibujo de la app</small></span>' +
+        '<span class="txt"><b>' + c.name + '</b>' +
+        '<small class="state">dibujo de la app</small>' +
+        '<small class="voz-de">' + (Voice.pack.info().voices[c.id]
+          ? 'voz: ' + Voice.pack.info().voices[c.id].voice : '') + '</small></span>' +
         '<label class="p-btn tiny">Poner imagen<input type="file" accept="image/*" hidden></label>' +
         '<button class="mini" title="Quitar">✕</button>';
 
@@ -332,6 +335,21 @@ const Parents = (function () {
         help.textContent = a.clips + ' de ' + a.total + ' frases tienen audio. Sin audio (las dirá el móvil): ' +
           a.faltan.slice(0, 6).join(' · ') + (a.faltan.length > 6 ? ' … y ' + (a.faltan.length - 6) + ' más' : '');
       }
+    });
+
+    $('#pDownload').addEventListener('click', async () => {
+      const b = $('#pDownload');
+      const help = $('#pVoiceHelp');
+      if (!Voice.pack.ready) { help.textContent = 'Esta versión no trae audios.'; return; }
+      b.disabled = true;
+      const r = await Voice.pack.downloadAll((hechos, total) => {
+        b.textContent = 'Descargando… ' + hechos + ' de ' + total;
+      });
+      b.disabled = false;
+      b.textContent = 'Descargar todas las voces (para usarla sin internet)';
+      help.textContent = r.fallos
+        ? 'Descargados ' + r.ok + ' de ' + r.total + ' audios (' + r.fallos + ' fallaron; prueba otra vez).'
+        : 'Listo: los ' + r.ok + ' audios están en el móvil. Ya funciona sin internet.';
     });
 
     $('#pAdd').addEventListener('click', () => {

@@ -484,3 +484,5 @@ body::before{
 .band-slot svg,.band-slot .portrait{height:100%; width:auto; margin:0 -10px}
 
 .warn-line{color:#ffd447; font-weight:700}
+
+.p-item .txt .voz-de{display:block; color:var(--cyan); font-size:11.5px}

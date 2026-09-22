@@ -9,7 +9,7 @@
      siempre, y la caché es la red de seguridad cuando no hay cobertura. Al
      revés, una copia mala se queda pegada para siempre. */
 
-const CACHE = 'kids-routines-v6';
+const CACHE = 'kids-routines-v7';
 
 const FILES = [
   './',

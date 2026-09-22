@@ -80,16 +80,26 @@ const Sound = (function () {
    móvil: así la niña oye siempre la misma voz inglesa, buena y alegre, y la app
    suena igual en todos los teléfonos. Si falta el clip, habla el móvil. */
 const Pack = (function () {
+  /* Los audios grabados. Hay UNA CARPETA POR CHICA, así que cada una tiene su
+     propia voz: Yuna suena distinta de Nari y de Soomi, que es lo que las hace
+     reconocibles cuando llaman. El fichero de cada frase se llama igual en las
+     tres carpetas; lo único que cambia es la carpeta.
+
+     Si falta el clip de esa chica, se prueba con la voz por defecto, y si
+     tampoco, habla el móvil. Nunca se queda en silencio por esto. */
   let files = {};        // { clave: nombre de fichero }
+  let voices = {};       // { idChica: { dir, voice } }
+  let porDefecto = '';
   let base = 'audio/';
   let ready = false;
-  const cache = {};      // Audio ya creados, para que no haya retardo la 2ª vez
+  let actual = '';       // la chica que habla ahora
+  const cache = {};
 
   /* la clave de una frase es la propia frase, simplificada */
   function key(text) {
     return String(text || '')
       .toLowerCase()
-      .replace(/[‘’']/g, '')
+      .replace(/[\u2018\u2019']/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')
       .slice(0, 70);
@@ -101,27 +111,46 @@ const Pack = (function () {
       if (!res.ok) return false;
       const data = await res.json();
       files = data.files || {};
+      voices = data.voices || {};
+      porDefecto = data.default || Object.keys(voices)[0] || '';
       base = data.base || 'audio/';
-      ready = Object.keys(files).length > 0;
+      ready = Object.keys(files).length > 0 && Object.keys(voices).length > 0;
+      if (!actual) actual = porDefecto;
       return ready;
     } catch (e) {
       return false;        // sin pack no pasa nada: habla el móvil
     }
   }
 
+  /* quién habla ahora (el id del personaje) */
+  function setCharacter(id) {
+    actual = (id && voices[id]) ? id : porDefecto;
+  }
+
+  function carpeta(id) {
+    const v = voices[id] || voices[porDefecto];
+    return v ? v.dir : '';
+  }
+
   function has(text) { return ready && !!files[key(text)]; }
+
+  function url(text, id) {
+    const k = key(text);
+    if (!ready || !files[k]) return null;
+    return base + carpeta(id || actual) + files[k];
+  }
 
   /* Suena UNO cada vez. Antes no se paraba el anterior y se solapaban: se oían
      dos voces a la vez y el audio iba desfasado del texto de la pantalla. */
   let sonando = null;
 
-  function play(text) {
+  function play(text, id) {
     return new Promise(resolve => {
-      const k = key(text);
-      if (!ready || !files[k]) { resolve(false); return; }
+      const src = url(text, id);
+      if (!src) { resolve(false); return; }
       stop();                                  // lo primero: callar lo anterior
-      let a = cache[k];
-      if (!a) { a = new Audio(base + files[k]); a.preload = 'auto'; cache[k] = a; }
+      let a = cache[src];
+      if (!a) { a = new Audio(src); a.preload = 'auto'; cache[src] = a; }
       sonando = a;
       const finish = ok => {
         a.onended = a.onerror = null;
@@ -143,7 +172,49 @@ const Pack = (function () {
     try { a.pause(); a.currentTime = 0; } catch (e) {}
   }
 
-  return { load, has, play, stop, key, get ready() { return ready; } };
+  /* deja preparados los audios de una llamada, para que no haya esperas */
+  function warm(textos, id) {
+    (textos || []).slice(0, 12).forEach(t => {
+      const src = url(t, id);
+      if (!src || cache[src]) return;
+      const a = new Audio(src);
+      a.preload = 'auto';
+      cache[src] = a;
+    });
+  }
+
+  /* Descarga todos los audios de todas las chicas. El service worker los va
+     guardando según pasan, así que después la app funciona sin cobertura.
+     Sin esto, cada clip se baja la primera vez que suena: en el baño sin wifi,
+     la primera vez, se quedaría muda. */
+  async function downloadAll(onProgress) {
+    if (!ready) return { ok: 0, fallos: 0 };
+    const urls = [];
+    Object.keys(voices).forEach(id => {
+      Object.keys(files).forEach(k => urls.push(base + voices[id].dir + files[k]));
+    });
+    let ok = 0, fallos = 0;
+    const LOTE = 8;                      // de ocho en ocho: ni lento ni atragantado
+    for (let i = 0; i < urls.length; i += LOTE) {
+      await Promise.all(urls.slice(i, i + LOTE).map(async u => {
+        try {
+          const r = await fetch(u, { cache: 'force-cache' });
+          if (r.ok) ok++; else fallos++;
+        } catch (e) { fallos++; }
+      }));
+      if (onProgress) onProgress(Math.min(i + LOTE, urls.length), urls.length);
+    }
+    return { ok: ok, fallos: fallos, total: urls.length };
+  }
+
+  function info() {
+    return { ready: ready, voices: voices, actual: actual, clips: Object.keys(files).length };
+  }
+
+  return {
+    load, has, play, stop, key, url, setCharacter, warm, info, downloadAll,
+    get ready() { return ready; }
+  };
 })();
 
 
